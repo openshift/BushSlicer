@@ -465,3 +465,61 @@ Feature: OVN related networking scenarios
     Then the step should succeed
     # the iface-id should be quoted if it starts with a digit
     And the output should contain "<%= project.name %>"
+
+
+  # @author huirwang@redhat.com
+  # @case_id OCP-38132
+  @admin
+  @destructive
+  Scenario: Should no intermittent packet drop from pod to pod after change hostname
+    Given I store the schedulable workers in the :nodes clipboard
+    Given admin uses the "openshift-ovn-kubernetes" project
+    And I store the hostname from external ids in the :original_hostname clipboard on the "<%= cb.nodes[0].name %>" node
+    Then the step should succeed
+    And I store the "short" hostname in the :short_hostname clipboard for the "<%= cb.nodes[0].name %>" node
+    Then the step should succeed
+
+    # Configure short hostname to the external_ids for the ovn node
+    When I set "<%= cb.short_hostname %>" hostname to external ids on the "<%= cb.nodes[0].name %>" node
+    Then the step should succeed
+    Given I register clean-up steps:
+    """
+    When I set "<%= cb.original_hostname%>" hostname to external ids on the "<%= cb.nodes[0].name %>" node
+    Then the step should succeed
+    """
+
+    # Check short hostname was set
+    Given I store the ovnkube-master "north" leader pod in the clipboard
+    Given I wait up to 15 seconds for the steps to pass:
+    """
+    And admin executes on the pod "northd" container:
+      | bash | -c | ovn-sbctl --no-leader-only list chassis \|grep "<%= cb.short_hostname %>" |
+    Then the step should succeed
+    And the output should contain:
+      | <%= cb.short_hostname %> |
+    And the output should not contain:
+      | <%= cb.original_hostname%> |
+    """
+
+    #Check no packet drop from pod to pod
+    Given I have a project
+    And I obtain test data file "networking/aosqe-pod-for-ping.json"
+    When I run oc create over "aosqe-pod-for-ping.json" replacing paths:
+      | ["spec"]["nodeName"] | <%= cb.nodes[0].name %> |
+    Then the step should succeed
+    And a pod becomes ready with labels:
+      | name=hello-pod |
+    And evaluation of `pod(1).name` is stored in the :pod1_name clipboard
+    Given I obtain test data file "networking/list_for_pods.json"
+    When I run oc create over "list_for_pods.json" replacing paths:
+      | ["items"][0]["spec"]["nodeName"] | <%= cb.nodes[1].name %> |
+      | ["items"][0]["spec"]["replicas"] | 1                       |
+    Then the step should succeed
+    Given 1 pod becomes ready with labels:
+      | name=test-pods |
+    And evaluation of `pod(2).ip` is stored in the :pod2_ip clipboard
+
+    When I execute on the "<%= cb.pod1_name%>" pod:
+      | ping | -c | 30 | -i | 0.2 | <%= cb.pod2_ip%> |
+    Then the step should succeed
+    And the output should contain "0% packet loss"
