@@ -672,6 +672,8 @@ Given /^I upgrade the operator with:$/ do | table |
   namespace = opts[:namespace]
   step %Q/I use the "#{namespace}" project/
 
+  old_csv = subscription(subscription).installplan_csv
+
   # upgrade operator
   patch_json = {"spec": {"channel": "#{channel}", "source": "#{catsrc}"}}
   patch_opts = {resource: "subscription", resource_name: subscription, p: patch_json.to_json, n: namespace, type: "merge"}
@@ -679,12 +681,12 @@ Given /^I upgrade the operator with:$/ do | table |
   raise "Patch failed with #{@result[:response]}" unless @result[:success]
   # wait till new csv to be installed
   success = wait_for(180, interval: 10) {
-    subscription(subscription).installplan_csv.include? channel
+    subscription(subscription).installplan_csv != old_csv
   }
   raise "the new CSV can't be installed" unless success
   # wait till new csv is ready
   success = wait_for(600, interval: 10) {
-    new_csv = subscription(subscription).current_csv(cached: false)
+    new_csv = subscription(subscription).installplan_csv(cached: false)
     cluster_service_version(new_csv).ready?[:success]
   }
   raise "can't upgrade operator #{subscription}" unless success
@@ -732,7 +734,14 @@ Given /^I upgrade the operator with:$/ do | table |
   # check fluentd status
   if cluster_logging('instance').collection_spec != nil
     if daemon_set('fluentd').exists?
-      success = wait_for(300, interval: 10) {
+      if subscription == "cluster-logging"
+        # wait for CLO to upgrade fluentd
+        success = wait_for(300, interval: 10) {
+          daemon_set('fluentd').replica_counters(cached: false)[:desired] != daemon_set('fluentd').replica_counters(cached: false)[:updated_scheduled]
+        }
+        raise "The fluentd upgrade process doesn't start" unless success
+      end
+      success = wait_for(600, interval: 10) {
         (daemon_set('fluentd').replica_counters(cached: false)[:desired] == daemon_set('fluentd').replica_counters(cached: false)[:updated_scheduled]) &&
         (daemon_set('fluentd').replica_counters(cached: false)[:desired] == daemon_set('fluentd').replica_counters(cached: false)[:available])
       }
@@ -743,7 +752,7 @@ Given /^I upgrade the operator with:$/ do | table |
   end
 end
 
-# only check the major version, such as 4.4, 4.5, 4.6, don't care about versions like 4.6.0-2020xxxxxxxx
+# upgrade operators when the channel and/or catalog source changed
 Given /^I make sure the logging operators match the cluster version$/ do
   step %Q/I switch to cluster admin pseudo user/
   # check if channel name in subscription is same to the target channel

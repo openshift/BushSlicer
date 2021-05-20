@@ -495,6 +495,7 @@ Feature: cluster log forwarder features
     And evaluation of `JSON.parse(@result[:stdout])['count']` is stored in the :app_log_count_2 clipboard
     And the expression should be true> cb.app_log_count_2 > 0
     """
+
   # @author kbharti@redhat.com
   # @case_id OCP-39786
   @admin
@@ -513,6 +514,7 @@ Feature: cluster log forwarder features
     Then the step should succeed
     #Creating secure secret and ConfigMap
     Given I switch to cluster admin pseudo user
+    And I use the "openshift-logging" project
     Given admin ensures "secure-forward" config_map is deleted from the "openshift-logging" project after scenario
     Given admin ensures "secure-forward" secret is deleted from the "openshift-logging" project after scenario
     Given I run the :create_secret client command with:
@@ -550,3 +552,121 @@ Feature: cluster log forwarder features
       | op           | GET                     |
     Then the step should succeed
     And the expression should be true> @result[:parsed]['count'] > 0
+
+  # @author qitang@redhat.com
+  # @case_id OCP-30851
+  @admin
+  @destructive
+  Scenario: Forward logs to mulitple external log aggregator
+    Given I switch to the first user
+    And I have a project
+    And evaluation of `project` is stored in the :proj clipboard
+    Given I obtain test data file "logging/loggen/container_json_log_template.json"
+    When I run the :new_app client command with:
+      | file | container_json_log_template.json |
+    Then the step should succeed
+
+    Given I create a project with non-leading digit name
+    And evaluation of `project` is stored in the :receiver_proj clipboard
+    Given fluentd receiver is deployed as secure with mTLS_share enabled in the "<%= cb.receiver_proj.name %>" project
+    And rsyslog receiver is deployed as insecure in the "<%= cb.receiver_proj.name %>" project
+    And external elasticsearch server is deployed with:
+      | version               | 6.8                          |
+      | scheme                | http                         |
+      | transport_ssl_enabled | false                        |
+      | project_name          | <%= cb.receiver_proj.name %> |
+    #deploy kafka
+    Given I deploy kafka in the "<%= cb.receiver_proj.name %>" project via amqstream operator
+
+    Given I switch to cluster admin pseudo user
+    And I use the "openshift-logging" project
+    Given I obtain test data file "logging/clusterlogforwarder/clf-multiple-external-logstore-template.yaml"
+    And admin ensures "instance" cluster_log_forwarder is deleted from the "openshift-logging" project after scenario
+    When I process and create:
+      | f | clf-multiple-external-logstore-template.yaml                                        |
+      | p | FLUENTD_URL=udp://fluentdserver.<%= cb.receiver_proj.name %>.svc:24224              |
+      | p | SYSLOG_URL=tcp://rsyslogserver.<%= cb.receiver_proj.name %>.svc:514                 |
+      | p | ELASTICSEARCH_URL=http://elasticsearch-server.<%= cb.receiver_proj.name %>.svc:9200 |
+      | p | AMQ_NAMESPACE=<%= cb.receiver_proj.name %>                                          |
+    Then the step should succeed
+    Given I obtain test data file "logging/clusterlogging/fluentd_only.yaml"
+    When I create clusterlogging instance with:
+      | remove_logging_pods | true              |
+      | crd_yaml            | fluentd_only.yaml |
+    Then the step should succeed
+    #check data in fluentd server
+    Given I use the "<%= cb.receiver_proj.name %>" project
+    And a pod becomes ready with labels:
+      | component=fluentdserver |
+    Given I wait up to 300 seconds for the steps to pass:
+    """
+    When I execute on the pod:
+      | ls | -l | /fluentd/log |
+    Then the output should contain:
+      | infra.log           |
+      | infra-container.log |
+    And the output should not contain:
+      | audit.log |
+      | app.log   |
+    """
+    When I execute on the pod:
+      | tail | -n | 1 | /fluentd/log/infra.log |
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"infra-logs"}} |
+    When I execute on the pod:
+      | tail | -n | 1 | /fluentd/log/infra-container.log |
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"infra-logs"}} |
+    # check data in rsyslog server
+    Given a pod becomes ready with labels:
+      | component=rsyslogserver |
+    And I wait up to 300 seconds for the steps to pass:
+    """
+    When I execute on the pod:
+      | ls | -l | /var/log/clf/ |
+    Then the output should contain:
+      | audit.log |
+    And the output should not contain:
+      | app-container.log   |
+      | infra.log           |
+      | infra-container.log |
+    """
+    When I execute on the pod:
+      | tail | -n | 1 | /var/log/clf/audit.log |
+    Then the step should succeed
+    And the output should contain:
+      | openshift:{"labels"=>{"logging"=>"audit-logs"}} |
+    # check data in external ES
+    Given a pod becomes ready with labels:
+      | app=elasticsearch-server |
+    # check app logs
+    And I wait up to 300 seconds for the steps to pass:
+    """
+    When I execute on the pod:
+      | curl | -sk | -XGET | http://localhost:9200/_cat/indices?format=JSON |
+    Then the step should succeed
+    And the expression should be true> (JSON.parse(@result[:stdout]).find {|e| e['index'].start_with? "app"}) != nil
+    And the expression should be true> (JSON.parse(@result[:stdout]).find {|e| e['index'].start_with? "infra"}).nil?
+    And the expression should be true> (JSON.parse(@result[:stdout]).find {|e| e['index'].start_with? "audit"}).nil?
+    When I execute on the pod:
+      | curl | -s | -XGET | -H | Content-Type: application/json | http://localhost:9200/app*/_search?format=JSON | -d | {"query": {"match": {"kubernetes.namespace_name": "<%= cb.proj.name %>"}}} |
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"application-logs"}} |
+    """
+
+    #check data in kafka
+    When I get records from the "topic-logging-infra" kafka topic in the "<%= cb.receiver_proj.name %>" project
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"infra-logs"}} |
+    When I get records from the "topic-logging-app" kafka topic in the "<%= cb.receiver_proj.name %>" project
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"application-logs"}} |
+    When I get records from the "topic-logging-audit" kafka topic in the "<%= cb.receiver_proj.name %>" project
+    Then the step should succeed
+    And the output should contain:
+      | "openshift":{"labels":{"logging":"audit-logs"}} |
