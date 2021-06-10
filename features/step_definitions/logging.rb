@@ -1050,10 +1050,10 @@ end
 
 Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}/ do | who, log_type, project_name |
     file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
-    Given I switch to the #{who} user
-    When I run the :new_project client command with:
+    step %Q/I switch to the #{who} user/
+    step %Q/I run the :new_project client command with:/,table(%{
       | project_name | #{project_name} |
-    Then the step should succeed
+    })
 
     case log_type
       when "json"
@@ -1065,36 +1065,36 @@ Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}/ do | who, 
       else
         template_file = "#{file_dir}/container_json_log_template.json"
       end
-    When I run the :new_app client command with:
+    step %Q/I run the :new_app client command with:/,table(%{
       | file | #{template_file} |
-    Then the step should succeed
+    })
 end
 
 Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana/do | who, pattern_name |
-    Given I switch to the #{who} user
-    When I login to kibana logging web console
-    Then the step should succeed
-    When I perform the :create_index_pattern_in_kibana web action with:
+    step %Q/I switch to the #{who} user/
+    step %Q/I login to kibana logging web console/
+    step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
       | index_pattern_name | #{pattern_name} |
-    Then the step should succeed
+    })
 end
 
 Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana/ do | who, pattern_name |
-    Given I switch to the #{who} user
-    When I login to kibana logging web console
-    Then the step should succeed
-    Given I wait up to 300 seconds for the steps to pass:
-    """
-    And I run the :go_to_kibana_discover_page web action
-    Then the step should succeed
-    """
+    step %Q/I switch to the #{who} user/
+    step %Q/I login to kibana logging web console/
+    success = wait_for(300, interval: 10) {
+        step %Q/I run the :go_to_kibana_discover_page web action/
+        #@result = browser.run_action("go_to_kibana_discover_page")
+    }
+    raise "can't goto the discover_page" unless success
+
     # check the log count, wait for the Kibana console to be loaded
-    When I perform the :kibana_find_index_pattern web action with:
+    step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
       | index_pattern_name | #{pattern_name} |
-    Then the step should succeed
-    Given I wait up to 300 seconds for the steps to pass:
-    """
-    When I run the :check_log_count web action
-    Then the step should succeed
-    """
+    })
+
+    success = wait_for(300, interval: 10) {
+       step %Q/I run the :check_log_count web action/
+       #@result = browser.run_action("check_log_count web action")
+    }
+    raise "Cound find any logs in kibana" unless success
 end
