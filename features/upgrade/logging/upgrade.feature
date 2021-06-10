@@ -27,18 +27,18 @@ Feature: Logging upgrading related features
     Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given The first user create index pattern "app*" in kibana
-    Given The second user create index pattern "app*" in kibana
-    Given The third user create index pattern "app*" in kibana
-    Given The fourth user create index pattern "app*" in kibana
+    Given The first user create index pattern "*app" in kibana
+    Given The second user create index pattern "*app" in kibana
+    Given The third user create index pattern "*app" in kibana
+    Given The fourth user create index pattern "*app*" in kibana
     # check cron jobs
     When I check the cronjob status
     Then the step should succeed
 
-    Given The first user can display logs under pattern "app*" in kibana 
-    Given The second user can display logs under pattern "app*" in kibana 
-    Given The third user can display logs under pattern "app*" in kibana 
-    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The first user can display logs under pattern "*app" in kibana 
+    Given The second user can display logs under pattern "*app" in kibana 
+    Given The third user can display logs under pattern "*app" in kibana 
+    Given The fourth user can display logs under pattern "*app" in kibana 
 
     #Given the "logging-upgrade-data-check" project is deleted
 
@@ -67,10 +67,10 @@ Feature: Logging upgrading related features
     Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given The first user can display logs under pattern "app*" in kibana 
-    Given The second user can display logs under pattern "app*" in kibana 
-    Given The third user can display logs under pattern "app*" in kibana 
-    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The first user can display logs under pattern "*app" in kibana 
+    Given The second user can display logs under pattern "*app" in kibana 
+    Given The third user can display logs under pattern "*app" in kibana 
+    Given The fourth user can display logs under pattern "*app" in kibana 
     # check if logging stack could gather logs
     And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     And evaluation of `cb.doc_count` is stored in the :docs_count_1 clipboard
@@ -88,7 +88,7 @@ Feature: Logging upgrading related features
     # upgrade logging if needed
     Given I make sure the logging operators match the cluster version
     #check data again
-    And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
+    Ad I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     Then the expression should be true> cb.doc_count > cb.docs_count_1
     And evaluation of `cb.doc_count` is stored in the :docs_count_2 clipboard
     # check if the logging still can gather logs
@@ -98,7 +98,7 @@ Feature: Logging upgrading related features
       | op           | GET                                                                                                  |
     Then the expression should be true> @result[:parsed]['count'] > cb.docs_count_2
     # check kibana console
-    Given The first user can display logs under pattern "app*" in kibana 
-    Given The second user can display logs under pattern "app*" in kibana 
-    Given The third user can display logs under pattern "app*" in kibana 
-    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The first user can display logs under pattern "*app" in kibana 
+    Given The second user can display logs under pattern "*app" in kibana 
+    Given The third user can display logs under pattern "*app" in kibana 
+    Given The fourth user can display logs under pattern "*app" in kibana 

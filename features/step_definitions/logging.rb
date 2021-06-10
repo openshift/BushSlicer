@@ -1092,9 +1092,19 @@ Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pa
         end
     end
     unless @result[:success]
-        step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
+        step %Q/I perform the :create_index_pattern web action with:/, table(%{
             | index_pattern_name | #{pattern_name} |
          })
+    #<input type="text" id="90bgva7z" name="indexPattern" placeholder="index-name-*" class="euiFieldText" data-test-subj="createIndexPatternNameInput" aria-describedby="90bgva7z-help" value="app*">
+    #<select id="hhmx8out" name="timeField" class="euiSelect" data-test-subj="createIndexPatternTimeFieldSelect" aria-describedby="hhmx8out-help">
+    #<option value="" selected=""></option>
+    #<option value="@timestamp">@timestamp</option>
+    #<option value="kubernetes.event.firstTimestamp">kubernetes.event.firstTimestamp</option>
+    #<option value="pipeline_metadata.collector.received_at">pipeline_metadata.collector.received_at</option>
+    #<option value="pipeline_metadata.normalizer.received_at">pipeline_metadata.normalizer.received_at</option>
+    #<option value="">───</option>
+    #<option>I don't want to use the Time Filter</option>
+    #</select>
     end
 end
 
