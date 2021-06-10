@@ -1080,12 +1080,19 @@ Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pa
     user(word_to_num(who))
     step %Q/I login to kibana logging web console/
     # check the log count, wait for the Kibana console to be loaded
-    step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-      | index_pattern_name | #{pattern_name} |
-    })
-    unless success
+    unless @result[:success]
+        success = wait_for(300, interval: 10) {
+            step %Q/I run the :go_to_kibana_discover_page web action/
+        }
+        unless success
+        step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | #{pattern_name} |
+         })
+        end
+    end
+    unless @result[:success]
         step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
-           | index_pattern_name | #{pattern_name} |
+            | index_pattern_name | #{pattern_name} |
          })
     end
 end
