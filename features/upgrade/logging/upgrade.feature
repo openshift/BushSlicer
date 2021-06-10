@@ -14,7 +14,7 @@ Feature: Logging upgrading related features
 
     # deploy clusterlogging, enable pvc for ES
     Given I switch to the first user
-    Given logging operators are installed successfully
+    #Given logging operators are installed successfully
     And default storageclass is stored in the :default_sc clipboard
     Given I obtain test data file "logging/clusterlogging/clusterlogging-storage-template.yaml"
     Given I create clusterlogging instance with:
