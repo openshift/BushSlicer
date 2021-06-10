@@ -31,7 +31,6 @@ Feature: Logging upgrading related features
     Given The second user create index pattern "app*" in kibana
     Given The third user create index pattern "app*" in kibana
     Given The fourth user create index pattern "app*" in kibana
-    Given The fifth user create index pattern "app*" in kibana
     # check cron jobs
     When I check the cronjob status
     Then the step should succeed
