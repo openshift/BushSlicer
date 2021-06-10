@@ -796,6 +796,7 @@ end
 # delete all the jobs, and wait up to 15min to check the jobs status
 Given /^I check the cronjob status$/ do
   # check logging version
+  step %Q/I switch to cluster admin pseudo user/
   project("openshift-operators-redhat")
   eo_version = subscription("elasticsearch-operator").current_csv(cached: false)[23..-1].split('-')[0]
   project("openshift-logging")
