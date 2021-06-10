@@ -27,18 +27,18 @@ Feature: Logging upgrading related features
     Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given The first user create index pattern "*app" in kibana
-    Given The second user create index pattern "*app" in kibana
-    Given The third user create index pattern "*app" in kibana
-    Given The fourth user create index pattern "*app*" in kibana
+    Then The first user create index pattern "*app" in kibana
+    Then The second user create index pattern "*app" in kibana
+    Then The third user create index pattern "*app" in kibana
+    Then The fourth user create index pattern "*app*" in kibana
     # check cron jobs
     When I check the cronjob status
     Then the step should succeed
 
-    Given The first user can display logs under pattern "*app" in kibana 
-    Given The second user can display logs under pattern "*app" in kibana 
-    Given The third user can display logs under pattern "*app" in kibana 
-    Given The fourth user can display logs under pattern "*app" in kibana 
+    Then The first user can display logs under pattern "*app" in kibana 
+    Then The second user can display logs under pattern "*app" in kibana 
+    Then The third user can display logs under pattern "*app" in kibana 
+    Then The fourth user can display logs under pattern "*app" in kibana 
 
     #Given the "logging-upgrade-data-check" project is deleted
 
@@ -63,19 +63,21 @@ Feature: Logging upgrading related features
     And I wait until fluentd is ready
     And I wait until kibana is ready
     # check the logs collected before upgrading
-    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given The first user can display logs under pattern "*app" in kibana 
-    Given The second user can display logs under pattern "*app" in kibana 
-    Given The third user can display logs under pattern "*app" in kibana 
-    Given The fourth user can display logs under pattern "*app" in kibana 
     # check if logging stack could gather logs
+    Given I switch to cluster admin pseudo user
     And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     And evaluation of `cb.doc_count` is stored in the :docs_count_1 clipboard
     # ensure there are no new PVCs after upgrading
     And the expression should be true> BushSlicer::PersistentVolumeClaim.list(user: user, project: project).count == cluster_logging('instance').logstore_node_count
+
+    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
+    Then The first user can display logs under pattern "*app" in kibana 
+    Then The second user can display logs under pattern "*app" in kibana 
+    Then The third user can display logs under pattern "*app" in kibana 
+    Then The fourth user can display logs under pattern "*app" in kibana 
     # check cron jobs
     When I check the cronjob status
     Then the step should succeed
@@ -98,7 +100,7 @@ Feature: Logging upgrading related features
       | op           | GET                                                                                                  |
     Then the expression should be true> @result[:parsed]['count'] > cb.docs_count_2
     # check kibana console
-    Given The first user can display logs under pattern "*app" in kibana 
-    Given The second user can display logs under pattern "*app" in kibana 
-    Given The third user can display logs under pattern "*app" in kibana 
-    Given The fourth user can display logs under pattern "*app" in kibana 
+    Then The first user can display logs under pattern "*app" in kibana 
+    Then The second user can display logs under pattern "*app" in kibana 
+    Then The third user can display logs under pattern "*app" in kibana 
+    Then The fourth user can display logs under pattern "*app" in kibana 
