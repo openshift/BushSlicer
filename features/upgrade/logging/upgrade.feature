@@ -4,13 +4,12 @@ Feature: Logging upgrading related features
   @admin
   @destructive
   @upgrade-prepare
-  @users=upuser1,upuser2,upuser3,upuser4,upuser5
+  @users=upuser1,upuser2,upuser3,upuser4
   Scenario: Cluster logging checking during cluster upgrade - prepare
     #Given The first user create "json" logs in project "logging-upgrade-data-1"
     #Given The second user create "json" logs in project "logging-upgrade-data-2"
     #Given The third user create "json" logs in project "logging-upgrade-data-3"
     #Given The fourth user create "json" logs in project "logging-upgrade-data-4"
-    #Given The fifth user create "json" logs in project "logging-upgrade-data-5"
 
     # deploy clusterlogging, enable pvc for ES
     Given I switch to the first user
@@ -28,7 +27,6 @@ Feature: Logging upgrading related features
     Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-5" logs to appear in the ES pod
     Given The first user create index pattern "app*" in kibana
     Given The second user create index pattern "app*" in kibana
     Given The third user create index pattern "app*" in kibana
@@ -42,7 +40,6 @@ Feature: Logging upgrading related features
     Given The second user can display logs under pattern "app*" in kibana 
     Given The third user can display logs under pattern "app*" in kibana 
     Given The fourth user can display logs under pattern "app*" in kibana 
-    Given The fifth user can display logs under pattern "app*" in kibana 
 
     #Given the "logging-upgrade-data-check" project is deleted
 
@@ -71,12 +68,10 @@ Feature: Logging upgrading related features
     Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-5" logs to appear in the ES pod
     Given The first user can display logs under pattern "app*" in kibana 
     Given The second user can display logs under pattern "app*" in kibana 
     Given The third user can display logs under pattern "app*" in kibana 
     Given The fourth user can display logs under pattern "app*" in kibana 
-    Given The fifth user can display logs under pattern "app*" in kibana 
     # check if logging stack could gather logs
     And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     And evaluation of `cb.doc_count` is stored in the :docs_count_1 clipboard
@@ -108,4 +103,3 @@ Feature: Logging upgrading related features
     Given The second user can display logs under pattern "app*" in kibana 
     Given The third user can display logs under pattern "app*" in kibana 
     Given The fourth user can display logs under pattern "app*" in kibana 
-    Given The fifth user can display logs under pattern "app*" in kibana 
