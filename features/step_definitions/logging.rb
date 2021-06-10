@@ -1045,4 +1045,56 @@ Given /^external elasticsearch server is deployed with:$/ do | table |
     | deployment_file | #{deploy}        |
     | pod_label       | #{pod_label}     |
   })
+
+end
+
+Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED} do | who, log_type, project_name |
+    file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
+    Given I switch to the #{who} user
+    When I run the :new_project client command with:
+      | project_name | #{project_name} |
+    Then the step should succeed
+
+    case log_type
+      when "json"
+        template_file = "#{file_dir}/container_json_log_template.json"
+      when "flat"
+        template_file = "#{file_dir}/container_json_unicode_log_template.json"
+      when "unicode"
+        template_file = "#{file_dir}/container_json_unicode_log_template.json"
+      else
+        template_file = "#{file_dir}/container_json_log_template.json"
+      end
+    When I run the :new_app client command with:
+      | file | #{template_file} |
+    Then the step should succeed
+end
+
+Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana do | who, pattern_name |
+    Given I switch to the #{who} user
+    When I login to kibana logging web console
+    Then the step should succeed
+    When I perform the :create_index_pattern_in_kibana web action with:
+      | index_pattern_name | #{pattern_name} |
+    Then the step should succeed
+end
+
+Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana do | who, pattern_name |
+    Given I switch to the #{who} user
+    When I login to kibana logging web console
+    Then the step should succeed
+    Given I wait up to 300 seconds for the steps to pass:
+    """
+    And I run the :go_to_kibana_discover_page web action
+    Then the step should succeed
+    """
+    # check the log count, wait for the Kibana console to be loaded
+    When I perform the :kibana_find_index_pattern web action with:
+      | index_pattern_name | #{pattern_name} |
+    Then the step should succeed
+    Given I wait up to 300 seconds for the steps to pass:
+    """
+    When I run the :check_log_count web action
+    Then the step should succeed
+    """
 end

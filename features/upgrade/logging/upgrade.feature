@@ -4,17 +4,13 @@ Feature: Logging upgrading related features
   @admin
   @destructive
   @upgrade-prepare
-  @users=upuser1,upuser2
+  @users=upuser1,upuser2,upuser3,upuser4,upuser5
   Scenario: Cluster logging checking during cluster upgrade - prepare
-    # prepare data
-    Given I switch to the first user
-    When I run the :new_project client command with:
-      | project_name | logging-upgrade-data-check |
-    Then the step should succeed
-    Given I obtain test data file "logging/loggen/container_json_log_template.json"
-    When I run the :new_app client command with:
-      | file | container_json_log_template.json |
-    Then the step should succeed
+    Given The first user create json log in project "logging-upgrade-data-1"
+    Given The second user create json log in project "logging-upgrade-data-2"
+    Given The third user create json log in project "logging-upgrade-data-3"
+    Given The fourth user create json log in project "logging-upgrade-data-4"
+    Given The fifth user create json log in project "logging-upgrade-data-5"
 
     # deploy clusterlogging, enable pvc for ES
     Given logging operators are installed successfully
@@ -27,21 +23,33 @@ Feature: Logging upgrading related features
       | es_node_count       | 3                                    |
       | redundancy_policy   | SingleRedundancy                     |
     Then the step should succeed
-    Given I wait for the project "logging-upgrade-data-check" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-5" logs to appear in the ES pod
+    Given The first user create index pattern "app*" in kibana
+    Given The second user create index pattern "app*" in kibana
+    Given The third user create index pattern "app*" in kibana
+    Given The forth user create index pattern "app*" in kibana
+    Given The fifth user create index pattern "app*" in kibana
     # check cron jobs
     When I check the cronjob status
     Then the step should succeed
 
-    Given I switch to the first user
-    When I login to kibana logging web console
-    Then the step should succeed
-    Given the "logging-upgrade-data-check" project is deleted
+    Given The first user can display logs under pattern "app*" in kibana 
+    Given The second user can display logs under pattern "app*" in kibana 
+    Given The third user can display logs under pattern "app*" in kibana 
+    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The fifth user can display logs under pattern "app*" in kibana 
+
+    #Given the "logging-upgrade-data-check" project is deleted
 
   # @case_id OCP-22911
   # @author qitang@redhat.com
   @admin
   @upgrade-check
-  @users=upuser1,upuser2
+  @users=upuser1,upuser2,upuser3,upuser4,upuser5
   Scenario: Cluster logging checking during cluster upgrade
     Given I switch to the first user
     And I create a project with non-leading digit name
@@ -58,7 +66,16 @@ Feature: Logging upgrading related features
     And I wait until fluentd is ready
     And I wait until kibana is ready
     # check the logs collected before upgrading
-    Given I wait for the project "logging-upgrade-data-check" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-5" logs to appear in the ES pod
+    Given The first user can display logs under pattern "app*" in kibana 
+    Given The second user can display logs under pattern "app*" in kibana 
+    Given The third user can display logs under pattern "app*" in kibana 
+    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The fifth user can display logs under pattern "app*" in kibana 
     # check if logging stack could gather logs
     And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     And evaluation of `cb.doc_count` is stored in the :docs_count_1 clipboard
@@ -76,7 +93,6 @@ Feature: Logging upgrading related features
     # upgrade logging if needed
     Given I make sure the logging operators match the cluster version
     #check data again
-    Given I wait for the project "logging-upgrade-data-check" logs to appear in the ES pod
     And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
     Then the expression should be true> cb.doc_count > cb.docs_count_1
     And evaluation of `cb.doc_count` is stored in the :docs_count_2 clipboard
@@ -87,6 +103,8 @@ Feature: Logging upgrading related features
       | op           | GET                                                                                                  |
     Then the expression should be true> @result[:parsed]['count'] > cb.docs_count_2
     # check kibana console
-    Given I switch to the second user
-    When I login to kibana logging web console
-    Then the step should succeed
+    Given The first user can display logs under pattern "app*" in kibana 
+    Given The second user can display logs under pattern "app*" in kibana 
+    Given The third user can display logs under pattern "app*" in kibana 
+    Given The fourth user can display logs under pattern "app*" in kibana 
+    Given The fifth user can display logs under pattern "app*" in kibana 
