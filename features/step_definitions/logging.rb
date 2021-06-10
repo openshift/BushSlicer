@@ -1051,9 +1051,12 @@ Given /^The #{WORD} user create #{QUOTED} logs in project #{QUOTED}$/ do | who, 
     file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
     user(word_to_num(who))
 
-    step %Q/I run the :new_project client command with:/,table(%{
-      | project_name | #{project_name} |
-    })
+    unless project(project_name).exists?
+        step %Q/I run the :new_project client command with:/,table(%{
+          | project_name | #{project_name} |
+        })
+        raise "Error creating namespace" unless @result[:success]
+    end
 
     case log_type
       when "json"
@@ -1065,17 +1068,26 @@ Given /^The #{WORD} user create #{QUOTED} logs in project #{QUOTED}$/ do | who, 
       else
         template_file = "#{file_dir}/container_json_log_template.json"
       end
-    step %Q/I run the :new_app client command with:/,table(%{
-      | file | #{template_file} |
-    })
+
+    unless  project.pods(by:user).size > 0 
+        step %Q/I run the :new_app client command with:/,table(%{
+           | file | #{template_file} |
+         })
+    end
 end
 
 Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pattern_name |
     user(word_to_num(who))
     step %Q/I login to kibana logging web console/
-    step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
+    # check the log count, wait for the Kibana console to be loaded
+    step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
       | index_pattern_name | #{pattern_name} |
     })
+    unless success
+        step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
+           | index_pattern_name | #{pattern_name} |
+         })
+    end
 end
 
 Given /^The #{WORD} user can display logs under pattern #{QUOTED} in kibana$/ do | who, pattern_name |
