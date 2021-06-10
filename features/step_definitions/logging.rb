@@ -1048,7 +1048,7 @@ Given /^external elasticsearch server is deployed with:$/ do | table |
 
 end
 
-Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED} do | who, log_type, project_name |
+Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}/ do | who, log_type, project_name |
     file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
     Given I switch to the #{who} user
     When I run the :new_project client command with:
@@ -1070,7 +1070,7 @@ Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED} do | who, l
     Then the step should succeed
 end
 
-Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana do | who, pattern_name |
+Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana/do | who, pattern_name |
     Given I switch to the #{who} user
     When I login to kibana logging web console
     Then the step should succeed
@@ -1079,7 +1079,7 @@ Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana do | who,
     Then the step should succeed
 end
 
-Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana do | who, pattern_name |
+Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana/ do | who, pattern_name |
     Given I switch to the #{who} user
     When I login to kibana logging web console
     Then the step should succeed
