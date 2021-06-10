@@ -13,6 +13,7 @@ Feature: Logging upgrading related features
     #Given The fifth user create "json" logs in project "logging-upgrade-data-5"
 
     # deploy clusterlogging, enable pvc for ES
+    Given I switch to the first user
     Given logging operators are installed successfully
     And default storageclass is stored in the :default_sc clipboard
     Given I obtain test data file "logging/clusterlogging/clusterlogging-storage-template.yaml"
