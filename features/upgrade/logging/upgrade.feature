@@ -6,11 +6,11 @@ Feature: Logging upgrading related features
   @upgrade-prepare
   @users=upuser1,upuser2,upuser3,upuser4,upuser5
   Scenario: Cluster logging checking during cluster upgrade - prepare
-    Given The first user create "json" logs in project "logging-upgrade-data-1"
-    Given The second user create "json" logs in project "logging-upgrade-data-2"
-    Given The third user create "json" logs in project "logging-upgrade-data-3"
-    Given The fourth user create "json" logs in project "logging-upgrade-data-4"
-    Given The fifth user create "json" logs in project "logging-upgrade-data-5"
+    #Given The first user create "json" logs in project "logging-upgrade-data-1"
+    #Given The second user create "json" logs in project "logging-upgrade-data-2"
+    #Given The third user create "json" logs in project "logging-upgrade-data-3"
+    #Given The fourth user create "json" logs in project "logging-upgrade-data-4"
+    #Given The fifth user create "json" logs in project "logging-upgrade-data-5"
 
     # deploy clusterlogging, enable pvc for ES
     Given logging operators are installed successfully
