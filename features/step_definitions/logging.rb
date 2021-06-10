@@ -1048,7 +1048,7 @@ Given /^external elasticsearch server is deployed with:$/ do | table |
 
 end
 
-Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}/ do | who, log_type, project_name |
+Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}$/ do | who, log_type, project_name |
     file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
     step %Q/I switch to the #{who} user/
     step %Q/I run the :new_project client command with:/,table(%{
@@ -1070,7 +1070,7 @@ Given /^The #{WORD} user create #{WORD} log in project #{OPT_QUOTED}/ do | who, 
     })
 end
 
-Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana/do | who, pattern_name |
+Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana$/ do | who, pattern_name |
     step %Q/I switch to the #{who} user/
     step %Q/I login to kibana logging web console/
     step %Q/I perform the :create_index_pattern_in_kibana web action with:/, table(%{
@@ -1078,7 +1078,7 @@ Given /^The #{WORD} user create index pattern  #{OPT_QUOTED} in kibana/do | who,
     })
 end
 
-Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana/ do | who, pattern_name |
+Given /^The #{WORD} user can display logs under pattern #{OPT_QUOTED} in kibana$/ do | who, pattern_name |
     step %Q/I switch to the #{who} user/
     step %Q/I login to kibana logging web console/
     success = wait_for(300, interval: 10) {
