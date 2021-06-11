@@ -430,6 +430,7 @@ end
 # es_util --query=*/_count -d '{"query": {"match": {"kubernetes.namespace_name": "project-name"}}}'
 # if count > 0, then the project logs are received
 When /^I wait(?: (\d+) seconds)? for the project #{QUOTED} logs to appear in the ES pod(?: with labels #{QUOTED})?$/ do |seconds, project_name, pod_labels|
+
   if pod_labels
     labels = pod_labels
   else
@@ -1108,7 +1109,7 @@ Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pa
     #</select>
 end
 
-Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOTED} in kibana$/ do | who, pattern_name |
+Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOTED} in kibana$/ do | who, project_name, pattern_name |
     step %Q/I switch to cluster admin pseudo user/
     eo_current_channel = subscription("elasticsearch-operator").channel(cached: false)
 
