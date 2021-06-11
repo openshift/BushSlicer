@@ -147,7 +147,7 @@ kibana_find_index_pattern:
   elements:
   - selector:
       xpath: //h2[@class="index-pattern-label" and @id="index_pattern_id" and contains(., "<index_pattern_name>")] | //span[contains(., "<index_pattern_name>")]
-    timeout: 300
+    timeout: 30
     op: click
 
 kibana_click_index:

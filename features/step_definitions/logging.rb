@@ -1144,7 +1144,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
          end
          step %Q/I run the :go_to_kibana_discover_page web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-            | index_pattern_name | #{real_pattern_name}|
+            | index_pattern_name | #{pattern_name}|
          })
 
          unless @result[:success]
