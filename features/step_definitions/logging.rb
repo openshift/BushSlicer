@@ -1124,6 +1124,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
          else
              pattern_name ||= "project.#{project_name}"
          end
+         step %Q/go_to_kibana_discover_page web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | #{pattern_name} |
          })
@@ -1136,22 +1137,26 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
     else
          if(project_name.match("openshift-") && project_name.match("kube-") && project_name == "default")
              pattern_name ||= "infra"
+             check_pattern_name="i*nfra"
          else
-             pattern_name ||= "app"
+             pattern_name ||= "a*pp"
+             check_pattern_name="a*pp"
          end
-         #step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-         #   | index_pattern_name | #{pattern_name}|
-         #})
-         #unless @result[:success]
-         #
-         step %Q/I run the :go_to_kibana_management_page web action/
-         raise "#{user.name} can not go into Index Patterns page" unless @result[:success]
-
-         step %Q/I perform the :create_index_pattern web action with:/, table(%{
-             | index_pattern_name | #{pattern_name} |
+         step %Q/go_to_kibana_discover_page web action/
+         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | #{check_pattern_name}|
          })
-         #end
-         raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+
+         unless @result[:success]
+             step %Q/I run the :go_to_kibana_management_page web action/
+             raise "#{user.name} can not go into Index Patterns page" unless @result[:success]
+
+             step %Q/I perform the :create_index_pattern web action with:/, table(%{
+                 | index_pattern_name | #{pattern_name} |
+             })
+             raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+             step %Q/go_to_kibana_discover_page web action/
+         end 
 
          success = wait_for(300, interval: 10) {
             step %Q/I run the :check_log_count web action/
