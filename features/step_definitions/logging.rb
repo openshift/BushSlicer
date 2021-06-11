@@ -1140,11 +1140,11 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
              check_pattern_name="i*nfra"
          else
              pattern_name ||= "a*pp"
-             check_pattern_name="a*pp"
+             real_pattern_name=pattern_name.insert(1, '*') 
          end
          step %Q/go_to_kibana_discover_page web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-            | index_pattern_name | #{check_pattern_name}|
+            | index_pattern_name | #{real_pattern_name}|
          })
 
          unless @result[:success]
