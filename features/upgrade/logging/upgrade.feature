@@ -23,8 +23,8 @@ Feature: Logging upgrading related features
     ##  | es_node_count       | 3                                    |
     ##  | redundancy_policy   | SingleRedundancy                     |
     ##Then the step should succeed
-    ##Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
-    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
+    ##Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
     ##Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     ##Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
     # check cron jobs
