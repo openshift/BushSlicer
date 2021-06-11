@@ -1111,7 +1111,7 @@ end
 
 Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOTED} in kibana$/ do | who, project_name, pattern_name |
     step %Q/I switch to cluster admin pseudo user/
-    eo_current_channel = subscription("elasticsearch-operator").channel(cached: false)
+    clo_current_channel = subscription("cluster-logging").channel(cached: false)
 
     user(word_to_num(who))
 
@@ -1119,7 +1119,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOT
     # check the log count, wait for the Kibana console to be loaded
     raise "#{user.name} can not login kibana" unless @result[:success]
 
-    if(['4.1', '4.2', '4.3', '4.4'].include?(eo_current_channel))
+    if(['4.1', '4.2', '4.3', '4.4'].include?(clo_current_channel))
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | project.#{project_name}|
          })
