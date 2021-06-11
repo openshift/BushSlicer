@@ -1124,7 +1124,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
          else
              pattern_name ||= "project.#{project_name}"
          end
-         step %Q/go_to_kibana_discover_page web action/
+         step %Q/I run the :go_to_kibana_discover_page web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | #{pattern_name} |
          })
@@ -1142,7 +1142,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
              pattern_name ||= "a*pp"
              real_pattern_name=pattern_name.insert(1, '*') 
          end
-         step %Q/go_to_kibana_discover_page web action/
+         step %Q/I run the :go_to_kibana_discover_page web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | #{real_pattern_name}|
          })
@@ -1155,7 +1155,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
                  | index_pattern_name | #{pattern_name} |
              })
              raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
-             step %Q/go_to_kibana_discover_page web action/
+             step %Q/I run the :go_to_kibana_discover_page web action/
          end 
 
          success = wait_for(300, interval: 10) {
