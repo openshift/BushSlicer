@@ -1134,6 +1134,11 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOT
          #   | index_pattern_name | #{pattern_name}|
          #})
          #unless @result[:success]
+      #
+      #
+         step %Q/I run the :go_to_kibana_management_page web action/
+         raise "#{user.name} can not go into Index Patterns page" unless @result[:success]
+
          step %Q/I perform the :create_index_pattern web action with:/, table(%{
              | index_pattern_name | #{pattern_name} |
          })
