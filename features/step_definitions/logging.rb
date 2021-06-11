@@ -1080,21 +1080,22 @@ end
 Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pattern_name |
     user(word_to_num(who))
     step %Q/I login to kibana logging web console/
-    # check the log count, wait for the Kibana console to be loaded
-    unless @result[:success]
-        success = wait_for(300, interval: 10) {
-            step %Q/I run the :go_to_kibana_discover_page web action/
-        }
-        unless success
+    raise "#{user.name} can not login kibana" unless @result[:success]
+    success = wait_for(300, interval: 10) {
+        step %Q/I run the :go_to_kibana_discover_page web action/
+    }
+    unless success
         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | #{pattern_name} |
          })
-        end
     end
     unless @result[:success]
         step %Q/I perform the :create_index_pattern web action with:/, table(%{
             | index_pattern_name | #{pattern_name} |
          })
+    end
+    raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+
     #<input type="text" id="90bgva7z" name="indexPattern" placeholder="index-name-*" class="euiFieldText" data-test-subj="createIndexPatternNameInput" aria-describedby="90bgva7z-help" value="app*">
     #<select id="hhmx8out" name="timeField" class="euiSelect" data-test-subj="createIndexPatternTimeFieldSelect" aria-describedby="hhmx8out-help">
     #<option value="" selected=""></option>
@@ -1105,26 +1106,43 @@ Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pa
     #<option value="">───</option>
     #<option>I don't want to use the Time Filter</option>
     #</select>
-    end
 end
 
-Given /^The #{WORD} user can display logs under pattern #{QUOTED} in kibana$/ do | who, pattern_name |
+Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOTED} in kibana$/ do | who, pattern_name |
+    step %Q/I switch to cluster admin pseudo user/
+    eo_current_channel = subscription("elasticsearch-operator").channel(cached: false)
+
     user(word_to_num(who))
+
     step %Q/I login to kibana logging web console/
-    success = wait_for(300, interval: 10) {
-        step %Q/I run the :go_to_kibana_discover_page web action/
-        #@result = browser.run_action("go_to_kibana_discover_page")
-    }
-    raise "can't goto the discover_page" unless success
-
     # check the log count, wait for the Kibana console to be loaded
-    step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-      | index_pattern_name | #{pattern_name} |
-    })
+    raise "#{user.name} can not login kibana" unless @result[:success]
 
-    success = wait_for(300, interval: 10) {
-       step %Q/I run the :check_log_count web action/
-       #@result = browser.run_action("check_log_count web action")
-    }
-    raise "Cound find any logs in kibana" unless success
+    if(['4.1', '4.2', '4.3', '4.4'].include?(eo_current_channel)
+         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | project.#{project_name}|
+         })
+         raise "#{user.name} can not find the pattern project.#{project_name}... " unless @result[:success]
+         success = wait_for(300, interval: 10) {
+            step %Q/I run the :check_log_count web action/
+            #@result = browser.run_action("check_log_count web action")
+         }
+         raise "#{user.name} can not find logs under pattern project.#{project_name}... in kibana" unless success
+
+    else
+         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | #{pattern_name}|
+         })
+         unless @result[:success]
+             step %Q/I perform the :create_index_pattern web action with:/, table(%{
+                 | index_pattern_name | #{pattern_name} |
+             })
+         end
+         raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+
+         success = wait_for(300, interval: 10) {
+            step %Q/I run the :check_log_count web action/
+         }
+         raise "#{user.name} can not find logs under pattern #{pattern_name} in kibana" unless success
+    end
 end
