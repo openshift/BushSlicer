@@ -1130,14 +1130,14 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOT
          }
          raise "#{user.name} can not find logs under pattern project.#{project_name}... in kibana" unless success
     else
-         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-            | index_pattern_name | #{pattern_name}|
+         #step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+         #   | index_pattern_name | #{pattern_name}|
+         #})
+         #unless @result[:success]
+         step %Q/I perform the :create_index_pattern web action with:/, table(%{
+             | index_pattern_name | #{pattern_name} |
          })
-         unless @result[:success]
-             step %Q/I perform the :create_index_pattern web action with:/, table(%{
-                 | index_pattern_name | #{pattern_name} |
-             })
-         end
+         #end
          raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
 
          success = wait_for(300, interval: 10) {
