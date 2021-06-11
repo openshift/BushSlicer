@@ -1109,19 +1109,19 @@ Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pa
     #</select>
 end
 
-Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOTED} in kibana$/ do | who, project_name, pattern_name |
+Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_QUOTED} in kibana$/ do | who, project_name, pattern_name |
     step %Q/I switch to cluster admin pseudo user/
     clo_current_channel = subscription("cluster-logging").channel(cached: false)
 
     user(word_to_num(who))
-
     step %Q/I login to kibana logging web console/
     # check the log count, wait for the Kibana console to be loaded
     raise "#{user.name} can not login kibana" unless @result[:success]
 
     if(['4.1', '4.2', '4.3', '4.4'].include?(clo_current_channel))
+         pattern_name ||= "project.#{project_name}"
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-            | index_pattern_name | project.#{project_name}|
+            | index_pattern_name | #{pattern_name} |
          })
          raise "#{user.name} can not find the pattern project.#{project_name}... " unless @result[:success]
          success = wait_for(300, interval: 10) {
@@ -1130,6 +1130,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern #{QUOT
          }
          raise "#{user.name} can not find logs under pattern project.#{project_name}... in kibana" unless success
     else
+         pattern_name ||= "app"
          #step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
          #   | index_pattern_name | #{pattern_name}|
          #})
