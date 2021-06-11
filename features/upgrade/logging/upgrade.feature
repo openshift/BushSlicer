@@ -31,7 +31,7 @@ Feature: Logging upgrading related features
     # check cron jobs
     #When I check the cronjob status
     #Then the step should succeed
-    Then The first user can display "logging-upgrade-data-1" project logs under pattern "ap*p" in kibana 
+    Then The first user can display "logging-upgrade-data-1" project logs under pattern "a*p*p" in kibana 
     ##Then The second user can display "logging-upgrade-data-2" project logs under pattern "*app" in kibana 
     ##Then The third user can display "logging-upgrade-data-3" project logs under pattern "*app" in kibana 
     ##Then The fourth user can display "logging-upgrade-data-4" project logs under pattern "*app" in kibana 
