@@ -1119,7 +1119,11 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
     raise "#{user.name} can not login kibana" unless @result[:success]
 
     if(['4.1', '4.2', '4.3', '4.4'].include?(clo_current_channel))
-         pattern_name ||= "project.#{project_name}"
+         if(project_name =~ "openshift-" && project_name =~ "kube-" && project_name == "default")
+             pattern_name ||= ".operation"
+         else
+             pattern_name ||= "project.#{project_name}"
+         end
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | #{pattern_name} |
          })
@@ -1130,7 +1134,11 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
          }
          raise "#{user.name} can not find logs under pattern project.#{project_name}... in kibana" unless success
     else
-         pattern_name ||= "app"
+         if(project_name =~ "openshift-" && project_name =~ "kube-" && project_name == "default")
+             pattern_name ||= "infra"
+         else
+             pattern_name ||= "app"
+         end
          #step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
          #   | index_pattern_name | #{pattern_name}|
          #})
