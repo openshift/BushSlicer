@@ -31,8 +31,8 @@ Feature: Logging upgrading related features
     ##Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
     ##Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
     # check cron jobs
-    When I check the cronjob status
-    Then the step should succeed
+    #When I check the cronjob status
+    #Then the step should succeed
     Then The first user can display "logging-upgrade-data-1" project logs under pattern "*app" in kibana 
     ##Then The second user can display "logging-upgrade-data-2" project logs under pattern "*app" in kibana 
     ##Then The third user can display "logging-upgrade-data-3" project logs under pattern "*app" in kibana 
