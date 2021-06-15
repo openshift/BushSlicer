@@ -1125,6 +1125,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
              pattern_name ||= "project.#{project_name}"
          end
          step %Q/I run the :go_to_kibana_discover_page web action/
+         step %Q/I run the :kibana_expand_index_patterns web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | "#{pattern_name}" |
          })
@@ -1143,6 +1144,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
              real_pattern_name=pattern_name.insert(1, '*') 
          end
          step %Q/I run the :go_to_kibana_discover_page web action/
+         step %Q/I run the :kibana_expand_index_patterns web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
             | index_pattern_name | "#{pattern_name}"|
          })
