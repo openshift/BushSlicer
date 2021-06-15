@@ -1137,9 +1137,9 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
     else
          if(project_name.match("openshift-") && project_name.match("kube-") && project_name == "default")
              pattern_name ||= "infra"
-             check_pattern_name="i*nfra"
+             real_pattern_name=pattern_name.insert(1, '*') 
          else
-             pattern_name ||= "a*pp"
+             pattern_name ||= "app"
              real_pattern_name=pattern_name.insert(1, '*') 
          end
          step %Q/I run the :go_to_kibana_discover_page web action/
