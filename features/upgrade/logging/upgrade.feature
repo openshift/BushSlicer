@@ -6,35 +6,35 @@ Feature: Logging upgrading related features
   @upgrade-prepare
   @users=upuser1,upuser2,upuser3,upuser4
   Scenario: Cluster logging checking during cluster upgrade - prepare
-    ##Given The first user create "json" logs in project "logging-upgrade-data-1"
-    ##Given The second user create "json" logs in project "logging-upgrade-data-2"
-    ##Given The third user create "json" logs in project "logging-upgrade-data-3"
-    ##Given The fourth user create "json" logs in project "logging-upgrade-data-4"
+    Given The first user create "json" logs in project "logging-upgrade-data-1"
+    Given The second user create "json" logs in project "logging-upgrade-data-2"
+    Given The third user create "json" logs in project "logging-upgrade-data-3"
+    Given The fourth user create "json" logs in project "logging-upgrade-data-4"
 
     # deploy clusterlogging, enable pvc for ES
-    ## Given logging operators are installed successfully
+    Given logging operators are installed successfully
     Given I switch to cluster admin pseudo user
     And I use the "openshift-logging" project
-    ## And default storageclass is stored in the :default_sc clipboard
-    ## Given I obtain test data file "logging/clusterlogging/clusterlogging-storage-template.yaml"
-    ## Given I create clusterlogging instance with:
-    ##  | crd_yaml            | clusterlogging-storage-template.yaml |
-    ##  | storage_class       | <%= cb.default_sc.name %>            |
-    ##  | storage_size        | 20Gi                                 |
-    ##  | es_node_count       | 3                                    |
-    ##  | redundancy_policy   | SingleRedundancy                     |
-    ##Then the step should succeed
-    ##Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
-    ##Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
-    ##Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
-    ##Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
+    And default storageclass is stored in the :default_sc clipboard
+    Given I obtain test data file "logging/clusterlogging/clusterlogging-storage-template.yaml"
+    Given I create clusterlogging instance with:
+      | crd_yaml            | clusterlogging-storage-template.yaml |
+      | storage_class       | <%= cb.default_sc.name %>            |
+      | storage_size        | 20Gi                                 |
+      | es_node_count       | 3                                    |
+      | redundancy_policy   | SingleRedundancy                     |
+    Then the step should succeed
+    Given I wait for the project "logging-upgrade-data-1" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-2" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-3" logs to appear in the ES pod
+    Given I wait for the project "logging-upgrade-data-4" logs to appear in the ES pod
     # check cron jobs
     #When I check the cronjob status
     #Then the step should succeed
     Then The first user can display "logging-upgrade-data-1" project logs under pattern in kibana 
-    ##Then The second user can display "logging-upgrade-data-2" project logs under pattern in kibana 
-    ##Then The third user can display "logging-upgrade-data-3" project logs under pattern in kibana 
-    ##Then The fourth user can display "logging-upgrade-data-4" project logs under pattern in kibana 
+    Then The second user can display "logging-upgrade-data-2" project logs under pattern in kibana 
+    Then The third user can display "logging-upgrade-data-3" project logs under pattern in kibana 
+    Then The fourth user can display "logging-upgrade-data-4" project logs under pattern in kibana 
 
     #Given the "logging-upgrade-data-check" project is deleted
 
