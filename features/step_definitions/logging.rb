@@ -1148,7 +1148,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
          step %Q/I run the :go_to_kibana_discover_page web action/
          step %Q/I run the :kibana_expand_index_patterns web action/
          step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
-            | index_pattern_name | "#{search_pattern_name}"|
+            | index_pattern_name | #{search_pattern_name}|
          })
 
          unless @result[:success]
@@ -1156,7 +1156,7 @@ Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_Q
              raise "#{user.name} can not go into Index Patterns page" unless @result[:success]
 
              step %Q/I perform the :create_index_pattern web action with:/, table(%{
-                 | index_pattern_name | "#{pattern_name}" |
+                 | index_pattern_name | #{pattern_name} |
              })
              raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
              step %Q/I run the :go_to_kibana_discover_page web action/
