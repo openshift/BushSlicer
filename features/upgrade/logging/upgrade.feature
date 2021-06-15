@@ -95,8 +95,7 @@ Feature: Logging upgrading related features
     Then the expression should be true> @result[:parsed]['count'] > cb.docs_count_2
     # check kibana console
     Then The first user can display "logging-upgrade-data-1" project logs under pattern in kibana
-    Then The second user can display "openshift-kube-apiserver-operator" project logs under pattern "*infra" in kibana
+    Then The second user can display "openshift-kube-apiserver-operator" project logs under pattern in kibana
     Then The second user can display "logging-upgrade-data-2" project logs under pattern in kibana
     Then The third user can display "logging-upgrade-data-3" project logs under pattern in kibana
     Then The fourth user can display "logging-upgrade-data-4" project logs under pattern in kibana
-
