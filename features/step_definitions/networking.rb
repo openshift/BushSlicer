@@ -1319,3 +1319,63 @@ Given /^the node's active nmcli connection is stored in the#{OPT_SYM} clipboard$
   cb[cb_name] = @result[:response].split("\n").first
   logger.info "Node's active nmcli connection uuid is stored in the #{cb_name} clipboard as #{cb[cb_name]}"
 end
+
+Given /^I store the hostname from external ids in the#{OPT_SYM} clipboard on the "([^"]*)" node$/ do |cb_ovn_hostname, node_name|
+  ensure_admin_tagged
+  node_name ||= node.name
+  cb_ovn_hostname ||= "ovn_hostname"
+
+  ovsvsctl_cmd = %w(ovs-vsctl list open .)
+  ovn_pod = BushSlicer::Pod.get_labeled("app=ovnkube-node", project: project("openshift-ovn-kubernetes", switch: false), user: admin) { |pod, hash|
+    pod.node_name == node_name
+  }.first
+  @result = ovn_pod.exec(*ovsvsctl_cmd, as: admin, container: "ovnkube-node")
+  if @result[:success]
+    ovn_state_output = @result[:response].strip
+  end
+  raise "Failed to execute network command!" unless ovn_state_output != nil
+  cb[cb_ovn_hostname] = ovn_state_output.split("hostname=").last.split(", ovn-bridge-mappings").first
+  logger.info "nodes's corresponding hostname from external_ids is stored in the #{cb_ovn_hostname} clipboard."
+end
+
+Given /^I store the#{OPT_QUOTED} hostname in the#{OPT_SYM} clipboard for the "([^"]*)" node$/ do |type_name,cb_type_hostname,node_name|
+  ensure_admin_tagged
+  node_name ||= node.name
+  cb_type_hostname ||= "type_hostname"
+  case type_name
+  when "short"
+    ovn_cmd = %w(hostname -s)
+  else
+    ovn_cmd = %w(hostname -f)
+  end
+
+  ovn_pod = BushSlicer::Pod.get_labeled("app=ovnkube-node", project: project("openshift-ovn-kubernetes", switch: false), user: admin) { |pod, hash|
+    pod.node_name == node_name
+  }.first
+  @result = ovn_pod.exec(*ovn_cmd, as: admin, container: "ovnkube-node")
+  if @result[:success]
+     hostname_result = @result[:response].lines.first.strip
+  end
+  raise "Failed to execute network command!" unless hostname_result != nil
+  cb[cb_type_hostname] = hostname_result
+  logger.info "nodes's corresponding #{type_name} hostname is stored in the #{cb_type_hostname}"
+end
+
+Given /^I set#{OPT_QUOTED} hostname to external ids on the "([^"]*)" node$/ do |custom_hostname,node_name|
+  ensure_admin_tagged
+  node_name ||= node.name
+
+  # set hostname to external ids
+  ovsvsctl_cmd = %w(ovs-vsctl set open .)
+  external_hostname = "external_ids:hostname=#{custom_hostname}"
+  ovsvsctl_cmd << external_hostname
+  ovn_pod = BushSlicer::Pod.get_labeled("app=ovnkube-node", project: project("openshift-ovn-kubernetes", switch: false), user: admin) { |pod, hash|
+    pod.node_name == node_name
+  }.first
+  @result = ovn_pod.exec(*ovsvsctl_cmd, as: admin, container: "ovnkube-node")
+  if @result[:success]
+    logger.info "Set the ${custom_hostname} to ovn external_ids successfully."
+  else
+    raise "Set the ${custom_hostname} to ovn external_ids failed."
+  end
+end
