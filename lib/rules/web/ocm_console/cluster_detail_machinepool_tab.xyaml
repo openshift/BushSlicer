@@ -29,6 +29,7 @@ check_specified_machine_pool:
     elements:
         - selector:
             xpath: //table[@aria-label='Machine pools']/tbody[<row_number>]/tr/td[@data-label='Machine pool' and text()='<machine_pool_name>']
+          timeout: 30
         - selector:
             xpath: //table[@aria-label='Machine pools']/tbody[<row_number>]/tr/td[@data-label='Instance type' and text()='<instance_type>']
         - selector:
@@ -110,6 +111,7 @@ expand_actions_of_machine_pool:
         selector:
             xpath: //table[@aria-label='Machine pools']/tbody//td[text()='<machine_pool_name>']/../td//button[@aria-label='Actions']
         op: click
+        timeout: 30
 delete_machine_pool:
     action: expand_actions_of_machine_pool
     element:
@@ -121,4 +123,41 @@ click_scale_machine_pool_button:
     element:
         selector:
             xpath: //li/button[text()='Scale']
+        op: click
+check_edit_taints_in_dropdown:
+    action: expand_actions_of_machine_pool
+    element:
+        selector:
+            xpath: //button[text()='Edit taints']
+click_edit_taints_in_dropdown:
+    element:
+        selector:
+            xpath: //button[text()='Edit taints']
+        op: click
+check_no_default_in_dropdown_when_editing_taints:
+    elements:
+        - selector:
+            xpath: //select[@id='machinePoolId']
+          op: click
+        - selector:
+            xpath: //option[text()='Default']
+          missing: true
+refresh_on_machine_pool_page:
+    element:
+        selector:
+            xpath: //button[@aria-label='Refresh']
+        op: click
+
+
+
+        
+check_edit_labels_in_dropdown:
+    action: expand_actions_of_machine_pool
+    element:
+        selector:
+            xpath: //button[text()='Edit labels']
+click_edit_labels_in_dropdown:
+    element:
+        selector:
+            xpath: //button[text()='Edit labels']
         op: click

@@ -828,3 +828,8 @@ check_billing_model:
             xpath: //div[contains(., 'to subscribe and pay based on the services you use')]
         - selector:
             xpath: //h3[text()='Infrastructure type:']
+check_or_uncheck_monitoring_in_creation_page:
+    element:
+        selector:
+            xpath: //input[@name='enable_user_workload_monitoring']
+        op: click

@@ -57,10 +57,10 @@ check_elements_on_add_user_dialog:
       xpath: //input[@id='user-id']
   element: &add_user_button
     selector:
-      xpath: //h1[text()='Add cluster user']/../..//button[text()='Add user']
+      xpath: //button[text()='Add user' and @type='submit']
   element: &cancel_add_user_button
     selector:
-      xpath: //h1[text()='Add cluster user']/../..//button[text()='Cancel']
+      xpath: //button[text()='Cancel' and @class='pf-c-button pf-m-secondary']
   element: &dedicated_admin_group
     selector:
       xpath: //div/input[@id='dedicated-admins']/following-sibling::label[@for='dedicated-admins']
@@ -193,7 +193,7 @@ click_grant_role_button_in_dialog:
 check_grant_AWS_infrastructure_role_dialog_loaded:
   elements:
   - selector:
-      xpath: //header/h1[text()='Grant AWS infrastructure role']
+      xpath: //span[text()='Grant AWS infrastructure role']
     timeout: 300
   - selector:
       xpath: //label/span[text()='AWS IAM ARN']

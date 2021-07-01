@@ -118,7 +118,7 @@ uninstall_succ_prompt_message_missing:
 check_display_name_dialog_loaded:
   elements:
     - selector:
-        xpath: //div[@class='pf-c-backdrop']//h1[text()='Edit display name'] 
+        xpath: //span[text()='Edit display name']
     - selector:
         xpath: //*[@id='edit-display-name-input' and contains(@value,<original_name>)]
 edit_display_name_in_dialog:
@@ -526,7 +526,7 @@ check_elements_on_edit_node_count_dialog:
 check_edit_node_count_dialog_title:
   element:
     selector:
-      xpath: //h1[text()='Edit node count']
+      xpath: //span[text()='Edit node count']
 check_machinepool_field_on_edit_node_count_dialog:
   elements:
   - selector:
@@ -547,6 +547,7 @@ add_machine_pool_dialog_loaded:
             xpath: //h1/span[text()='Add machine pool']
         - selector:
             xpath: //span[text()='Worker node instance type']
+          timeout: 30
         - selector:
             xpath: //span[contains(text(),'Worker node count')]
         - selector:
@@ -757,6 +758,96 @@ set_addon_cidr_default_parameter:
         selector:
             xpath: //button[contains(text(),'Use default')]
         op: click
+check_for_no_input_in_taints:
+    elements:
+        - selector:
+            xpath: //input[@id='taints[<row_num>].key' and value='']
+          missing: true
+        - selector:
+            xpath: //input[@id='taints[<row_num>].value' and value='']
+          missing: true
+check_for_taints_row:
+    elements:
+        - selector:
+            xpath: //input[@id='taints[<row_num>].key']
+        - selector:
+            xpath: //input[@id='taints[<row_num>].value']
+        - selector:
+            xpath: //select[@id='taints[<row_num>].effect']
+check_edit_taints_dialog:
+    action: click_edit_taints_in_dropdown
+    action: check_no_default_in_dropdown_when_editing_taints
+    action: check_for_taints_row
+    elements:
+        - selector:
+            xpath: //h4[text()='Your edits will only apply to new nodes']
+        - selector:
+            xpath: //span[text()='Edit taints']
+        - selector:
+            xpath: //button[text()='Add taint']
+        - selector:
+            xpath: //button[text()='Save' and @aria-disabled='true']
+        - selector:
+            xpath: //button[text()='Cancel']
+check_for_add_taint:
+    elements:
+        - selector:
+            xpath: //button[text()='Add taint']
+          op: click
+        - selector:
+            xpath: (//button[@class='pf-c-button pf-m-link reduxFormKeyValueList-removeBtn'])[2]
+    action: check_for_taints_row
+check_edit_labels_dialog:
+    action: click_edit_labels_in_dropdown
+    action: check_no_default_in_dropdown_when_editing_taints
+    elements:
+        - selector:
+            xpath: //h4[text()='Your edits will only apply to new nodes']
+        - selector:
+            xpath: //span[text()='Edit labels']
+        - selector:
+            xpath: //p[contains(text(),'Labels help you organize and select resources')]
+        - selector:
+            xpath: //input[@placeholder='Add a label']
+        - selector:
+            xpath: //button[text()='Save' and @aria-disabled='true']
+        - selector:
+            xpath: //button[text()='Cancel']
+input_labels_and_values:
+    elements:
+        - selector:
+            xpath: //input[@placeholder='Add a label']
+          op: send_keys <key_value_pair>
+        - selector:
+            xpath: //input[@placeholder='Add a label']
+          op: send_keys :enter
+check_labels_and_values_pair:
+    element:
+        selector:
+            xpath: //span[text()='<key_value_pair>']
+check_error_messages_when_duplicate_labels:
+    element:
+        selector:
+            xpath: //div[text()='Each label should have a unique key. <label_name> already exists.']
+check_error_messages_when_invalid_label_value_pair:
+    element:
+        selector:
+            xpath: //div[text()='Each label should be in the form of "key=value".']
+click_delete_label_button:
+    element:
+        selector:
+            xpath: //span[text()='<key_value_pair>']/../button[@aria-label='remove-label']
+        op: click
+check_labels_and_values_pair_disappeared:
+    element:
+        selector:
+            xpath: //span[text()='<key_value_pair>']
+        missing: true
+check_no_cache_for_labels_and_values_pair:
+    element:
+        selector:
+            xpath: //span[@class='pf-c-label pf-m-blue']
+        missing: true
 
 input_addon_install_parameter:
     element:
@@ -769,3 +860,10 @@ click_install_button_on_parameter_dialog:
         selector:
             xpath: //button[@type='submit' and text()="Install"]
         op: click
+wait_for_dialog_disappear:
+    element:
+        selector:
+            xpath: //div[@role='dialog']
+        missing: true
+        timeout: 5
+        

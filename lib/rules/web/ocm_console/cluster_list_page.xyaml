@@ -2,7 +2,7 @@ create_cluster_button_loaded:
     element: &create_cluster_button
         selector:
             xpath: //a[contains(@href, '/openshift/create')]/button[text()='Create cluster']
-        timeout: 10
+        timeout: 30
 register_cluster_button_loaded:
     element: &register_cluster_button
         selector:

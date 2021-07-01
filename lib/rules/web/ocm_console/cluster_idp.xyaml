@@ -302,7 +302,7 @@ check_openid_idp_advanced_options:
 check_idp_advanced_options_collapsed:
   elements:
   - selector:
-      xpath: //div//span[text()='Show advanced Options']/../span/*[name()='svg']
+      xpath: //div//span[text()='Show advanced options']/../span/*[name()='svg']
   - selector:
       xpath: //div//button/span[text()='Show advanced options']
 click_the_advanced_options_button:
@@ -315,7 +315,7 @@ check_idp_advanced_options_expanded:
   - selector:
       xpath: //div//button[@aria-expanded='true']/span/*[name()='svg']
   - selector:
-      xpath: //div//button[@aria-expanded='true']/span[text()='Hide advanced Options']
+      xpath: //div//button[@aria-expanded='true']/span[text()='Hide advanced options']
 check_openid_ca_file_field:
   elements:
   - selector:
@@ -539,7 +539,7 @@ delete_idp:
 check_remove_idp_dialog:
   elements:
   - selector:
-      xpath: //div[@class='pf-c-backdrop']//h1[text()='Remove identity provider']
+      xpath: //span[text()='Remove identity provider']
   - selector:
       xpath: //div[@class='pf-c-backdrop']//p[contains(.,'about to remove the') and contains(.,'identity provider') and contains(.,'from this cluster.')]/b[contains(.,'<idp_name>')]
   - selector:
