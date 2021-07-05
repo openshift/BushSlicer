@@ -430,6 +430,7 @@ end
 # es_util --query=*/_count -d '{"query": {"match": {"kubernetes.namespace_name": "project-name"}}}'
 # if count > 0, then the project logs are received
 When /^I wait(?: (\d+) seconds)? for the project #{QUOTED} logs to appear in the ES pod(?: with labels #{QUOTED})?$/ do |seconds, project_name, pod_labels|
+
   if pod_labels
     labels = pod_labels
   else
@@ -796,6 +797,7 @@ end
 # delete all the jobs, and wait up to 15min to check the jobs status
 Given /^I check the cronjob status$/ do
   # check logging version
+  step %Q/I switch to cluster admin pseudo user/
   project("openshift-operators-redhat")
   eo_version = subscription("elasticsearch-operator").current_csv(cached: false)[23..-1].split('-')[0]
   project("openshift-logging")
@@ -1045,4 +1047,124 @@ Given /^external elasticsearch server is deployed with:$/ do | table |
     | deployment_file | #{deploy}        |
     | pod_label       | #{pod_label}     |
   })
+end
+
+Given /^The #{WORD} user create #{QUOTED} logs in project #{QUOTED}$/ do | who, log_type, project_name |
+    file_dir = "#{BushSlicer::HOME}/testdata/logging/loggen"
+    user(word_to_num(who))
+
+    unless project(project_name).exists?
+        step %Q/I run the :new_project client command with:/,table(%{
+          | project_name | #{project_name} |
+        })
+        raise "Error creating namespace" unless @result[:success]
+    end
+
+    case log_type
+      when "json"
+        template_file = "#{file_dir}/container_json_log_template.json"
+      when "flat"
+        template_file = "#{file_dir}/container_json_unicode_log_template.json"
+      when "unicode"
+        template_file = "#{file_dir}/container_json_unicode_log_template.json"
+      else
+        template_file = "#{file_dir}/container_json_log_template.json"
+      end
+
+    unless  project.pods(by:user).size > 0 
+        step %Q/I run the :new_app client command with:/,table(%{
+           | file | #{template_file} |
+         })
+    end
+end
+
+Given /^The #{WORD} user create index pattern #{QUOTED} in kibana$/ do | who, pattern_name |
+    user(word_to_num(who))
+    step %Q/I login to kibana logging web console/
+    raise "#{user.name} can not login kibana" unless @result[:success]
+    success = wait_for(300, interval: 10) {
+        step %Q/I run the :go_to_kibana_discover_page web action/
+    }
+    unless success
+        step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | #{pattern_name} |
+         })
+    end
+    unless @result[:success]
+        step %Q/I perform the :create_index_pattern web action with:/, table(%{
+            | index_pattern_name | #{pattern_name} |
+         })
+    end
+    raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+
+    #<input type="text" id="90bgva7z" name="indexPattern" placeholder="index-name-*" class="euiFieldText" data-test-subj="createIndexPatternNameInput" aria-describedby="90bgva7z-help" value="app*">
+    #<select id="hhmx8out" name="timeField" class="euiSelect" data-test-subj="createIndexPatternTimeFieldSelect" aria-describedby="hhmx8out-help">
+    #<option value="" selected=""></option>
+    #<option value="@timestamp">@timestamp</option>
+    #<option value="kubernetes.event.firstTimestamp">kubernetes.event.firstTimestamp</option>
+    #<option value="pipeline_metadata.collector.received_at">pipeline_metadata.collector.received_at</option>
+    #<option value="pipeline_metadata.normalizer.received_at">pipeline_metadata.normalizer.received_at</option>
+    #<option value="">───</option>
+    #<option>I don't want to use the Time Filter</option>
+    #</select>
+end
+
+Given /^The #{WORD} user can display #{QUOTED} project logs under pattern#{OPT_QUOTED} in kibana$/ do | who, project_name, pattern_name |
+    step %Q/I switch to cluster admin pseudo user/
+    clo_current_channel = subscription("cluster-logging").channel(cached: false)
+
+    user(word_to_num(who))
+    step %Q/I login to kibana logging web console/
+    # check the log count, wait for the Kibana console to be loaded
+    raise "#{user.name} can not login kibana" unless @result[:success]
+
+    if(['4.1', '4.2', '4.3', '4.4'].include?(clo_current_channel))
+         if(project_name.match("openshift-") && project_name.match("kube-") && project_name == "default")
+             pattern_name ||= ".operation"
+         else
+             pattern_name ||= "project.#{project_name}"
+         end
+         step %Q/I run the :go_to_kibana_discover_page web action/
+         step %Q/I run the :kibana_expand_index_patterns web action/
+         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | "#{pattern_name}" |
+         })
+         raise "#{user.name} can not find the pattern project.#{project_name}... " unless @result[:success]
+         success = wait_for(300, interval: 10) {
+            step %Q/I run the :check_log_count web action/
+            #@result = browser.run_action("check_log_count web action")
+         }
+         raise "#{user.name} can not find logs under pattern project.#{project_name}... in kibana" unless success
+    else
+         if(project_name.match("openshift-") && project_name.match("kube-") && project_name == "default")
+             pattern_name ||= "*infra"
+             #search_pattern_name=pattern_name.insert(1, '*') 
+             search_pattern_name="infra"
+         else
+             pattern_name ||= "*app"
+             #search_pattern_name=pattern_name.insert(1, '*') 
+             search_pattern_name="app"
+         end
+         step %Q/I run the :go_to_kibana_discover_page web action/
+         step %Q/I run the :kibana_expand_index_patterns web action/
+         step %Q/I perform the :kibana_find_index_pattern web action with:/,table(%{
+            | index_pattern_name | #{search_pattern_name}|
+         })
+
+         unless @result[:success]
+             step %Q/I run the :go_to_kibana_management_page web action/
+             raise "#{user.name} can not go into Index Patterns page" unless @result[:success]
+
+             step %Q/I perform the :create_index_pattern web action with:/, table(%{
+                 | index_pattern_name | #{pattern_name} |
+             })
+             raise "#{user.name} can not find&create pattern #{pattern_name} in kibana" unless @result[:success]
+             step %Q/I run the :go_to_kibana_discover_page web action/
+         end 
+
+         success = wait_for(300, interval: 10) {
+            step %Q/I run the :check_log_count web action/
+         }
+         raise "#{user.name} can not find logs under pattern #{pattern_name} in kibana" unless success
+    end
 end
