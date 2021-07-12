@@ -572,6 +572,10 @@ check_aws_compute_node_instances_type:
         - selector:
             xpath: //h4[text()='16 vCPU 64 GiB RAM']/../../div/div[text()='General purpose']
         - selector:
+            xpath: //h4[text()='32 vCPU 128 GiB RAM']/../../div/div[text()='m5.8xlarge']
+        - selector:
+            xpath: //h4[text()='32 vCPU 128 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
             xpath: //h4[text()='4 vCPU 32 GiB RAM']/../../div/div[text()='r5.xlarge']
         - selector:
             xpath: //h4[text()='4 vCPU 32 GiB RAM']/../../div/div[text()='Memory optimized']
@@ -591,6 +595,52 @@ check_aws_compute_node_instances_type:
             xpath: //h4[text()='16 vCPU 32 GiB RAM']/../../div/div[text()='c5.4xlarge']
         - selector:
             xpath: //h4[text()='16 vCPU 32 GiB RAM']/../../div/div[text()='Compute optimized']
+check_aws_byoc_compute_node_instances_type:
+    elements:
+        - selector:
+            xpath: //h4[text()='48 vCPU 192 GiB RAM']/../../div/div[text()='m5.12xlarge']
+        - selector:
+            xpath: //h4[text()='48 vCPU 192 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='64 vCPU 256 GiB RAM']/../../div/div[text()='m5.16xlarge']
+        - selector:
+            xpath: //h4[text()='64 vCPU 256 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='96 vCPU 384 GiB RAM']/../../div/div[text()='m5.24xlarge']
+        - selector:
+            xpath: //h4[text()='96 vCPU 384 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='32 vCPU 256 GiB RAM']/../../div/div[text()='r5.8xlarge']
+        - selector:
+            xpath: //h4[text()='32 vCPU 256 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='48 vCPU 384 GiB RAM']/../../div/div[text()='r5.12xlarge']
+        - selector:
+            xpath: //h4[text()='48 vCPU 384 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='64 vCPU 512 GiB RAM']/../../div/div[text()='r5.16xlarge']
+        - selector:
+            xpath: //h4[text()='64 vCPU 512 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='96 vCPU 768 GiB RAM']/../../div/div[text()='r5.24xlarge']
+        - selector:
+            xpath: //h4[text()='96 vCPU 768 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='36 vCPU 72 GiB RAM']/../../div/div[text()='c5.9xlarge']
+        - selector:
+            xpath: //h4[text()='36 vCPU 72 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='48 vCPU 96 GiB RAM']/../../div/div[text()='c5.12xlarge']
+        - selector:
+            xpath: //h4[text()='48 vCPU 96 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='72 vCPU 144 GiB RAM']/../../div/div[text()='c5.18xlarge']
+        - selector:
+            xpath: //h4[text()='72 vCPU 144 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='96 vCPU 192 GiB RAM']/../../div/div[text()='c5.24xlarge']
+        - selector:
+            xpath: //h4[text()='96 vCPU 192 GiB RAM']/../../div/div[text()='Compute optimized']
 check_gcp_compute_node_instances_type:
     elements:
         - selector:
@@ -625,7 +675,56 @@ check_gcp_compute_node_instances_type:
             xpath: //h4[text()='16 vCPU 32 GiB RAM']/../../div/div[text()='custom-16-32768']
         - selector:
             xpath: //h4[text()='16 vCPU 32 GiB RAM']/../../div/div[text()='Compute optimized']
-
+check_gcp_byoc_compute_node_instances_type:
+    elements:
+        - selector:
+            xpath: //h4[text()='32 vCPU 128 GiB RAM']/../../div/div[text()='custom-32-131072']
+        - selector:
+            xpath: //h4[text()='32 vCPU 128 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='48 vCPU 192 GiB RAM']/../../div/div[text()='custom-48-196608']
+        - selector:
+            xpath: //h4[text()='48 vCPU 192 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='64 vCPU 256 GiB RAM']/../../div/div[text()='custom-64-262144']
+        - selector:
+            xpath: //h4[text()='64 vCPU 256 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='96 vCPU 384 GiB RAM']/../../div/div[text()='custom-96-393216']
+        - selector:
+            xpath: //h4[text()='96 vCPU 384 GiB RAM']/../../div/div[text()='General purpose']
+        - selector:
+            xpath: //h4[text()='32 vCPU 256 GiB RAM']/../../div/div[text()='custom-32-262144']
+        - selector:
+            xpath: //h4[text()='32 vCPU 256 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='48 vCPU 384 GiB RAM']/../../div/div[text()='custom-48-393216']
+        - selector:
+            xpath: //h4[text()='48 vCPU 384 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='64 vCPU 512 GiB RAM']/../../div/div[text()='custom-64-524288']
+        - selector:
+            xpath: //h4[text()='64 vCPU 512 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='96 vCPU 768 GiB RAM']/../../div/div[text()='custom-96-786432']
+        - selector:
+            xpath: //h4[text()='96 vCPU 768 GiB RAM']/../../div/div[text()='Memory optimized']
+        - selector:
+            xpath: //h4[text()='36 vCPU 64 GiB RAM']/../../div/div[text()='custom-36-73728']
+        - selector:
+            xpath: //h4[text()='36 vCPU 64 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='48 vCPU 96 GiB RAM']/../../div/div[text()='custom-48-98304']
+        - selector:
+            xpath: //h4[text()='48 vCPU 96 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='72 vCPU 144 GiB RAM']/../../div/div[text()='custom-72-147456']
+        - selector:
+            xpath: //h4[text()='72 vCPU 144 GiB RAM']/../../div/div[text()='Compute optimized']
+        - selector:
+            xpath: //h4[text()='96 vCPU 192 GiB RAM']/../../div/div[text()='custom-96-196608']
+        - selector:
+            xpath: //h4[text()='96 vCPU 192 GiB RAM']/../../div/div[text()='Compute optimized']
 check_aws_account_id_error_message:
     params:
         locator_id: account_id
