@@ -263,12 +263,19 @@ module BushSlicer
     # Wait until OSD cluster is ready and OCP version is available
     # NOTE: we need to wait for registering all metrics - OCP version indicates this state
     def wait_for_osd(osd_name)
+      ocp_version = "NONE"
       loop do
         osd_status = get_value(osd_name, "state")
-        ocp_version = get_value(osd_name, "openshift_version")
         logger.info("Status of cluster #{osd_name} is #{osd_status} and OCP version is #{ocp_version}")
-        if osd_status == "ready" && ocp_version != "NONE"
-          break
+        if osd_status == "ready"
+          if ENV["OCM_WAIT_FOR_METRICS"] == "false"
+            logger.info("Status of cluster #{osd_name} is #{osd_status} and we do not wait for metrics")
+            break
+          end
+          ocp_version = get_value(osd_name, "openshift_version")
+          if ocp_version != "NONE"
+            break
+          end
         end
         logger.info("Check again after 2 minutes")
         sleep(120)
