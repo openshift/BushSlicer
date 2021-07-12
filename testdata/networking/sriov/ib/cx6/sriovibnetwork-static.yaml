@@ -1,0 +1,18 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovIBNetwork
+metadata:
+  name: ib-cx6
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: |
+    {
+     "type": "static"
+    }
+  capabilities: |
+    {
+      "infinibandGUID": true,
+      "ips": true
+    }
+  resourceName: cx6ib
+  linkState: enable
+  networkNamespace: z6

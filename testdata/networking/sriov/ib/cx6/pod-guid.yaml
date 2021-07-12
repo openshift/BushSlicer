@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: testpod6
+  labels:
+    name: pod-guid
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |
+       [
+       {
+       "name":"ib-cx6",
+       "infiniband-guid": "c2:11:22:33:44:55:66:77",
+       "ips": ["192.168.10.1/24", "2001::1/64"]
+       }
+        ]
+spec:
+  containers:
+  - name: test-pod
+    image: quay.io/openshifttest/hello-sdn@sha256:d5785550cf77b7932b090fcd1a2625472912fb3189d5973f177a5a2c347a1f95

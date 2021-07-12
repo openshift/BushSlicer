@@ -1,0 +1,16 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: ib-cx4
+  namespace: openshift-sriov-network-operator
+spec:
+  deviceType: netdevice
+  nicSelector:
+    deviceID: "1013"
+    vendor: '15b3'
+  nodeSelector:
+    feature.node.kubernetes.io/sriov-capable: 'true'
+  numVfs: 2
+  priority: 99
+  linkType: ib
+  resourceName: cx4ib

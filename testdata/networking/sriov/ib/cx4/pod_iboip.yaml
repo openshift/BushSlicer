@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: testpod4
+  labels:
+    name: ipoib
+  annotations:
+    k8s.v1.cni.cncf.io/networks: ib-cx4
+spec:
+  containers:
+  - name: test-pod
+    securityContext:
+      privileged: true
+    image: quay.io/openshifttest/hello-sdn@sha256:d5785550cf77b7932b090fcd1a2625472912fb3189d5973f177a5a2c347a1f95

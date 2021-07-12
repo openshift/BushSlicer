@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: testpod4
+  labels:
+    name: ib 
+spec:
+  containers:
+  - name: test-pod
+    image: quay.io/openshifttest/hello-sdn@sha256:d5785550cf77b7932b090fcd1a2625472912fb3189d5973f177a5a2c347a1f95
+    resources:
+      limits:
+        openshift.io/cx4ib: "1"
+      requests:
+        openshift.io/cx4ib: "1"

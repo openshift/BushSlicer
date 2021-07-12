@@ -1,0 +1,20 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: ib-cx5
+  namespace: openshift-sriov-network-operator
+spec:
+  deviceType: netdevice
+  nicSelector:
+    deviceID: "1017"
+    pfNames:
+      - ib0
+    rootDevices:
+      - '0000:5e:00.0'
+    vendor: '15b3'
+  nodeSelector:
+    feature.node.kubernetes.io/sriov-capable: 'true'
+  numVfs: 2
+  priority: 99
+  linkType: ib
+  resourceName: cx5ib

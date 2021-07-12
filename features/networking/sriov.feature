@@ -224,9 +224,9 @@ Feature: Sriov related scenarios
       | project       | <%= cb.usr_project1%> |
     Then the step should succeed
 
-    And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project %>" project
-    Given I delete the "intel-netdevice-rhcos" sriovnetwork
-    And admin checks that there are no network_attachment_definition in the "<%= cb.usr_project %>" project
+    And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project1 %>" project
+    And admin checks that the "intel-netdevice-rhcos" sriov_network is deleted from the "openshift-sriov-network-operator" project 
+    And admin checks that there are no network_attachment_definition in the "<%= cb.usr_project1 %>" project
 
   # @author zzhao@redhat.com
   # @case_id OCP-25287
@@ -242,7 +242,7 @@ Feature: Sriov related scenarios
       | cr_yaml       | intelnetdevice.yaml   |
       | cr_name       | intel-netdevice-rhcos |
       | resource_type | sriovnetwork          |
-      | project       | <%= cb.usr_project1%> |
+      | project       | <%= cb.usr_project%>  |
     Then the step should succeed
 
     And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project %>" project
@@ -651,7 +651,7 @@ Feature: Sriov related scenarios
     And the output should contain "mtu 1800"
     And evaluation of `pod.node_name` is stored in the :pod_node clipboard
     #Delete the networkpolicy, the PF Mtu should rollback to origin value.
-    Given I delete the "mlx278-netdevice" sriov networkpolicy
+    Given admin ensures "mlx278-netdevice" sriov_network_node_policy is deleted from the "openshift-sriov-network-operator" project
     And I wait up to 500 seconds for the steps to pass:
     """
     When I run the :get admin command with:

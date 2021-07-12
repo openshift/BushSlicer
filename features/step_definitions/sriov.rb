@@ -93,19 +93,19 @@ Given /^I create sriov resource with following:$/ do | table |
   when "sriovnetworknodepolicies"
     logger.info("resource type is: sriovnetworknodepolicies")
     if sriov_network_node_policy(cr_name).exists?
-       step %Q/I delete the "#{cr_name}" sriov networkpolicy/
+       step %Q/admin ensures "#{cr_name}" sriov_network_node_policy is deleted from the "openshift-sriov-network-operator" project/
     end
 
     @result = admin.cli_exec(:create, f: resource_yaml, n: sriov_ns)
     raise "Unable to create sriov policy" unless @result[:success]
     teardown_add {
-      step %Q/I delete the "#{cr_name}" sriov networkpolicy/
+      step %Q/admin ensures "#{cr_name}" sriov_network_node_policy is deleted from the "openshift-sriov-network-operator" project/
     }
   when "sriovnetwork"
     cr_project = opts[:project]
     logger.info("resource type is: sriovnetwork")
     if sriov_network(cr_name).exists?
-       step %Q/I delete the "#{cr_name}" sriovnetwork/
+       step %Q/admin ensures "#{cr_name}" sriov_network is deleted from the "openshift-sriov-network-operator" project/
     end
 
     step %Q/I run oc create over "#{resource_yaml}" replacing paths:/,table(%{
@@ -114,34 +114,24 @@ Given /^I create sriov resource with following:$/ do | table |
     
     step %Q{the step should succeed}
     teardown_add {
-      step %Q/I delete the "#{cr_name}" sriovnetwork/
+      step %Q/admin ensures "#{cr_name}" sriov_network is deleted from the "openshift-sriov-network-operator" project/
+    }
+  when "sriovibnetwork"
+    cr_project = opts[:project]
+    logger.info("resource type is: sriovibnetwork")
+    if sriov_i_b_network(cr_name).exists?
+       step %Q/admin ensures "#{cr_name}" sriov_i_b_network is deleted from the "openshift-sriov-network-operator" project/
+    end
+
+    step %Q/I run oc create over "#{resource_yaml}" replacing paths:/,table(%{
+      | ["spec"]["networkNamespace"] | "#{cr_project}" |
+    })
+
+    step %Q{the step should succeed}
+    teardown_add {
+      step %Q/admin ensures "#{cr_name}" sriov_i_b_network is deleted from the "openshift-sriov-network-operator" project/
     }
   end 
-end
-
-
-Given /^I delete the #{QUOTED} sriov networkpolicy$/ do | cr_name |
-  ensure_admin_tagged
-  ensure_destructive_tagged
-  step %Q/I switch to cluster admin pseudo user/
-  step %Q/I use the "openshift-sriov-network-operator" project/
-  sriov_ns = "openshift-sriov-network-operator"
-  if sriov_network_node_policy(cr_name).exists?
-    @result = admin.cli_exec(:delete, object_type: 'sriovnetworknodepolicies', object_name_or_id: cr_name, n: sriov_ns)
-    raise "Unable to delete the sriov policy" unless @result[:success]
-  end
-end
-
-Given /^I delete the #{QUOTED} sriovnetwork$/ do | cr_name |
-  ensure_admin_tagged
-  ensure_destructive_tagged
-  step %Q/I switch to cluster admin pseudo user/
-  step %Q/I use the "openshift-sriov-network-operator" project/
-  sriov_ns = "openshift-sriov-network-operator"
-  if sriov_network(cr_name).exists?
-    @result = admin.cli_exec(:delete, object_type: 'sriovnetwork', object_name_or_id: cr_name, n: sriov_ns)
-    raise "Unable to delete the sriovnetwork" unless @result[:success]
-  end
 end
 
 Given /^(SR-IOV resource injector|Admission webhook) is (enabled|disabled)$/ do | feature, status |

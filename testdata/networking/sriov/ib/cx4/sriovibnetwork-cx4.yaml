@@ -1,0 +1,24 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovIBNetwork
+metadata:
+  name: ib-cx4
+  namespace: openshift-sriov-network-operator
+spec:
+  ipam: |
+    {
+      "type": "host-local",
+      "subnet": "10.56.214.0/24",
+      "rangeStart": "10.56.214.171",
+      "rangeEnd": "10.56.214.181",
+      "routes": [{
+        "dst": "0.0.0.0/0"
+      }],
+      "gateway": "10.56.214.1"
+    }
+  capabilities: |
+    {
+      "infinibandGUID": true
+    }
+  resourceName: cx4ib
+  linkState: enable
+  networkNamespace: z4
