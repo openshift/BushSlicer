@@ -105,7 +105,7 @@ require_relative 'chrome_extension'
           )
         end
       end
-      client = Selenium::WebDriver::Remote::Http::Default.new
+      client = Watir::HttpClient.new
       client.open_timeout = 180
       client.read_timeout = 600 # ff legacy vs `I have a jenkins v2 application`
       headless
@@ -127,28 +127,32 @@ require_relative 'chrome_extension'
         # This is actually a shortcut for trace logging
         # this also needs debug webdriver logging enabled above to work
         # options.log_level = 'trace'
-
-        @browser = Watir::Browser.new :firefox, :http_client=>client, desired_capabilities: caps, options: options, url: @selenium_url
+        browser_opts = {
+          accept_insecure_certs: true,
+          element_scroll_behavior: 1,
+          "moz:webdriverClick": true,
+        }
+        @browser = Watir::Browser.new :firefox, :http_client=>client, options: browser_opts, url: @selenium_url
         if @size
           browser.window.resize_to(*@size)
         end
       elsif @browser_type == :chrome
         logger.info "Launching Chrome"
 
-	      #https://bugs.chromium.org/p/chromium/issues/detail?id=1056073
-	      chrome_caps[:acceptInsecureCerts] = true
-        if Integer === @scroll_strategy
-          chrome_caps[:element_scroll_behavior] = @scroll_strategy
-        end
+	      ##https://bugs.chromium.org/p/chromium/issues/detail?id=1056073
         if self.class.container?
           chrome_switches.concat %w[--no-sandbox --disable-setuid-sandbox --disable-gpu --disable-infobars --disable-dev-shm-usage]
         end
-        # options = Selenium::WebDriver::Chrome::Options.new
-        # options.add_extension proxy_chrome_ext_file if proxy_chrome_ext_file
-        options = {}
+        #options = Selenium::WebDriver::Chrome::Options.new
+        #options.add_extension proxy_chrome_ext_file if proxy_chrome_ext_file
+        browser_opts = {
+          accept_insecure_certs: true,
+          switches: chrome_switches,
+          element_scroll_behavior: 1,
+          proxy: chrome_caps.proxy,
+        }
         options[:extensions] = [proxy_chrome_ext_file] if proxy_chrome_ext_file
-        url_or_switches = @selenium_url ? {url: @selenium_url} : {switches: chrome_switches}
-        @browser = Watir::Browser.new :chrome, desired_capabilities: chrome_caps, options: options, **url_or_switches
+        @browser = Watir::Browser.new :chrome, options: browser_opts, url: @selenium_url
         if @size
           browser.window.resize_to(*@size)
         end
