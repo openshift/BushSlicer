@@ -1,0 +1,36 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ReplicationController",
+      "metadata": {
+        "labels": {
+          "name": "max-pods"
+        },
+        "name": "max-pods"
+      },
+      "spec": {
+        "replicas": 500,
+        "template": {
+          "metadata": {
+            "labels":  {
+              "name": "max-pods"
+            }
+          },
+          "spec": {
+            "containers": [
+              {  
+              "name": "max-pod",
+                "image": "quay.io/openshifttest/nonexist"
+              }
+            ],
+          "nodeName": "node-name"
+          }
+        }
+      }
+    }
+  ]
+}
+

@@ -525,3 +525,80 @@ Feature: Pod related networking scenarios
       | ls /var/lib/cni/networks/openshift-sdn/ |
     Then the step should succeed
     And the output should not contain "10.132.2.200"
+
+  # @author zzhao@redhat.com
+  # @case_id OCP-41666
+  # @bug_id 1924741
+  @long-duration
+  @admin
+  @destructive
+  Scenario: Pod stuck in container creating - failed to run CNI IPAM ADD: failed to allocate for range 0: no IP addresses available in range set
+    Given I switch to cluster admin pseudo user
+    When I run the :label admin command with:
+      | resource  | machineconfigpool         |
+      | name      | worker                    |
+      | key_val   | custom-kubelet=large-pods |
+      | overwrite | true                      |
+    Then the step should succeed
+    Given I obtain test data file "networking/custom_kubelet.yaml"
+    When I run the :create client command with:
+      | f | custom_kubelet.yaml |
+    Then the step should succeed
+    And I wait up to 30 seconds for the steps to pass:
+    """
+    When I run the :get client command with:
+      | resource      | machineconfigpool |
+      | resource_name | worker            |
+    Then the output should match:
+      | .*False\\s+True\\s+False |
+    """
+    And I wait up to 1980 seconds for the steps to pass:
+    """
+    When I run the :get client command with:
+      | resource      | machineconfigpool |
+      | resource_name | worker            |
+    Then the output should match:
+      | .*True\\s+False\\s+False |
+    """
+    Given admin ensures "set-max-pods" kubelet_config is deleted after scenario
+    Given I store the schedulable workers in the :nodes clipboard
+    Given I switch to the first user
+    Given I have a project
+    And evaluation of `project.name` is stored in the :proj1 clipboard
+    Given I obtain test data file "networking/max-pods-without-consume-memory.yaml"
+    When I run oc create over "max-pods-without-consume-memory.yaml" replacing paths:
+      | ["items"][0]["spec"]["template"]["spec"]["nodeName"] | <%= cb.nodes[0].name %> |
+    Then the step should succeed
+    
+    ##wait 700 seconds to make sure pods can consume all 509(one subnet eg 10.128.0.1/23 contains 510 ips, there is 10.128.0.1 already be used, so the rest of are 509 ips)
+    And I wait up to 700 seconds for the steps to pass:
+    """
+    When I run command on the "<%= cb.nodes[0].name %>" node's sdn pod:
+      | bash | -c | ls /host/var/lib/cni/networks/openshift-sdn \| grep "10.1" -c  |
+    Then the step should succeed
+    And the output should contain "509"
+    """
+
+    Given I create a new project
+    Given I obtain test data file "networking/max-pods-without-consume-memory.yaml"
+    When I run oc create over "max-pods-without-consume-memory.yaml" replacing paths:
+      | ["items"][0]["spec"]["template"]["spec"]["nodeName"] | <%= cb.nodes[0].name %> |
+    Then the step should succeed
+
+    Given the "<%= cb.proj1 %>" project is deleted
+    
+    ##wait 120 seconds here to make the ip can be released
+    Given 120 seconds have passed
+     
+    ##another project pods will continue consuming the pods ip again
+    And I wait up to 700 seconds for the steps to pass:
+    """
+    When I run command on the "<%= cb.nodes[0].name %>" node's sdn pod:
+      | bash | -c | ls /host/var/lib/cni/networks/openshift-sdn \| grep "10.1" -c  |
+    Then the step should succeed
+    And the output should contain "509"
+    """
+    When I run command on the "<%= cb.nodes[0].name %>" node's sdn pod:
+      | bash | -c | ovs-vsctl --columns=external-ids,name,ofport list interface |
+    Then the step should succeed
+    And the output should not match "ofport.*-1"
