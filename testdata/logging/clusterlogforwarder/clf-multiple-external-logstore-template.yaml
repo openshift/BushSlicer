@@ -1,5 +1,5 @@
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: clusterlogforwarder-template
 objects:
@@ -15,6 +15,8 @@ objects:
       url: ${ELASTICSEARCH_URL}
     - name: fluentd
       type: fluentdForward
+      secret:
+        name: pipelinesecret
       url: ${FLUENTD_URL}
     - name: rsyslog
       type: syslog
@@ -23,22 +25,40 @@ objects:
         facility: ${FACILITY}
         severity: ${SEVERITY}
       url: ${SYSLOG_URL}
+    - name: kafka-infra
+      url: tls://my-cluster-kafka-bootstrap.${AMQ_NAMESPACE}.svc.cluster.local:9092/topic-logging-infra
+      type: kafka
+    - name: kafka-app
+      url: tls://my-cluster-kafka-bootstrap.${AMQ_NAMESPACE}.svc.cluster.local:9092/topic-logging-app
+      type: kafka
+    - name: kafka-audit
+      url: tls://my-cluster-kafka-bootstrap.${AMQ_NAMESPACE}.svc.cluster.local:9092/topic-logging-audit
+      type: kafka
     pipelines:
     - name: test-infra
       inputRefs:
       - infrastructure
+      labels:
+        logging: infra-logs
       outputRefs:
-      - elasticsearch
+      - kafka-infra
+      - fluentd
     - name: test-app
       inputRefs:
       - application
+      labels:
+        logging: application-logs
       outputRefs:
-      - fluentd
+      - elasticsearch
+      - kafka-app
     - name: test-audit
       inputRefs:
       - audit
+      labels:
+        logging: audit-logs
       outputRefs:
       - rsyslog
+      - kafka-audit
 parameters:
 - name: ELASTICSEARCH_URL
   value: http://elasticsearch-server.openshift-logging.svc:9200
@@ -52,3 +72,5 @@ parameters:
   value: "informational"
 - name: RFC
   value: RFC5424
+- name: AMQ_NAMESPACE
+  value: "amq-aosqe"
