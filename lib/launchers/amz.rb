@@ -97,6 +97,11 @@ module BushSlicer
       current_user.arn
     end
 
+    def iam_client
+      self.arn
+      @client_iam
+    end
+
     # @param ecoded_message [String]
     # @return [String] in JSON format
     def decode_authorization_message(encoded_message)

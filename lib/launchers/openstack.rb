@@ -952,8 +952,12 @@ module BushSlicer
       instances = get_objects("servers")
       instances.each do |instance|
         threads << Thread.new(instance) do | i|
-          inst_details = get_instance_detail(i['id'])
-          running_inst[inst_details.dig('server', 'name')] = inst_details['server'] if inst_details.dig('server','status') == "ACTIVE"
+          begin
+            inst_details = get_instance_detail(i['id'])
+            running_inst[inst_details.dig('server', 'name')] = inst_details['server'] if inst_details.dig('server','status') == "ACTIVE"
+          rescue
+            next
+          end
         end
       end
       threads.each(&:join)

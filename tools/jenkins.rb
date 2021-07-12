@@ -5,7 +5,7 @@ module BushSlicer
   class Jenkins
     include Common::Helper
 
-    attr_accessor :client, :build_map
+    attr_accessor :client, :build_map, :bm_sorted_keys, :build_user_map
     def initialize
       url = "https://#{conf[:services][:jenkins][:host]}"
       @client = JenkinsApi::Client.new(:server_url => url,
@@ -17,7 +17,6 @@ module BushSlicer
       #  @build_map =  {"qeci-293"=>69641,
       #  ...
       #  "juzhao-1023"=>69559}
-
     end
 
     # @return <Array of builds>
@@ -61,18 +60,23 @@ module BushSlicer
       end
       threads.each { |thr| thr.join }
       self.build_map = build_map
-      return build_map
+      self.bm_sorted_keys = build_map.keys.sort
+      return build_map, build_map.keys.sort
     end
 
-    # @return <Array> of job id or 'Not found is none is matched'
+    # @return job id or 'Not found is none is matched and the name of the cluster
+    # 1. filter out build_map entries by filtering out by first few characters
+    #    in the inst_group_name
+    #
     def get_jenkins_flexy_job_id(inst_group_name)
-      index = self.build_map.keys.select { |b|
-        b.include? inst_group_name
-      }.first
+      f_keys = bm_sorted_keys.select { |k| k.start_with? inst_group_name.split('-').first }
+      #f_keys = bm_sorted_keys.select { |k| k.start_with? inst_group_name[0..6] }
+      index = f_keys.select { |k| inst_group_name.start_with? k}.first
+
       if index
-        self.build_map[index]
+        return self.build_map[index], index
       else
-        "not found"
+        return "not found", nil
       end
     end
 

@@ -391,6 +391,33 @@ module BushSlicer
       end
     end
 
+    # @return [Array] of [RbVmomi::VIM::VirtualMachine]
+    private def vms(folder: nil)
+      folder ||= datacenter.vmFolder
+      machines = []
+      folder.childEntity.each do |x|
+        name, junk = x.to_s.split('(', 2)
+        case name
+        when "Folder"
+          machines.concat vms(folder: x)
+        when "VirtualMachine"
+          machines << x if x.runtime.powerState == "poweredOn"
+          # puts "#{x.name}   => #{x.config.createDate}"
+        else
+          puts "# Unrecognized Entity " + x.to_s
+        end
+      end
+      return machines
+    end
+
+    def get_running_instances
+      return vms.select { |i| i.runtime.powerState == "poweredOn" }
+    end
+
+    def instance_uptime(timestamp)
+      ((Time.now  - timestamp) /(60 * 60)).round(2)
+    end
+
     class VSphereError < StandardError
     end
 
