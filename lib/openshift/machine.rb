@@ -75,7 +75,7 @@ module BushSlicer
 
     def aws_subnet(user: nil, cached: true, quiet: false)
        raw_resource(user: user, cached: cached ,quiet: quiet).
-         dig('spec', 'providerSpec', 'value', 'subnet','filters')
+         dig('spec', 'providerSpec', 'value', 'subnet','id')
     end
 
     def aws_iamInstanceProfile(user: nil, cached: true, quiet: false)
