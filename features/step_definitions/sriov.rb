@@ -75,7 +75,7 @@ Given /^configDaemonNodeSelector set to (true|false) in sriovoperatorconfig$/ do
      | resource_name | default                                                                                         |
      | p             | {"spec":{"configDaemonNodeSelector":{"feature.node.kubernetes.io/sriov-capable": "#{status}"}}} |
      | type          | merge                                                                                           |
-   })  
+   })
   step %Q{the step should succeed}
 end
 
@@ -169,7 +169,13 @@ end
 Given /^I patch the sriov logs to "(.+?)"$/ do | loglevel |
   ensure_admin_tagged
   project("openshift-sriov-network-operator")
-  step %Q/as admin I successfully merge patch resource "sriovoperatorconfigs.sriovnetwork.openshift.io\/default" with:/,table(%{
-      | {"spec":{"logLevel": #{loglevel}}} |
-  })
+  step %Q/I run the :patch admin command with:/, table(%{
+     | resource      | sriovoperatorconfigs.sriovnetwork.openshift.io |
+     | resource_name | default                                        |
+     | p             | {"spec":{"logLevel": #{loglevel}}}             |
+     | type          | merge                                          |
+   })
+  #step %Q/as admin I successfully merge patch resource "sriovoperatorconfigs.sriovnetwork.openshift.io\/default" with:/,table(%{
+  #    | {"spec":{"logLevel": #{loglevel}}} |
+  #})
 end  

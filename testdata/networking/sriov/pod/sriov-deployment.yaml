@@ -1,28 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sriov-test
+  name: sriovtest
   labels:
     version: v1
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: sriov-test
+      app: sriov
       version: v1
   template:
     metadata:
       annotations:
         k8s.v1.cni.cncf.io/networks: '[
               {
-                "name": "intel-netdevice-rhcos",
-                "namespace": "default"
+                "name": "intel-netdevice-rhcos"
               }
                ]'
       labels:
-        app: sriov-test
+        app: sriov
         version: v1
     spec:
       containers:
       - name: samplepod
-        image: quay.io/openshifttest/multus-pod@sha256:48da37205f9b43424e0983d4c5e7e07f77b7ba1504bbe35e2f264c75dcb4cd15
+        image: quay.io/openshifttest/hello-sdn@sha256:d5785550cf77b7932b090fcd1a2625472912fb3189d5973f177a5a2c347a1f95

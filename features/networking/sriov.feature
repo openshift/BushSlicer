@@ -28,7 +28,7 @@ Feature: Sriov related scenarios
       | cr_name       | intel-netdevice          |
       | resource_type | sriovnetworknodepolicies |
     Then the step should succeed
-    And I wait up to 300 seconds for the steps to pass:
+    And I wait up to 500 seconds for the steps to pass:
     """
     When I run the :get admin command with:
       | resource    | sriovnetworknodestates           |
@@ -78,7 +78,7 @@ Feature: Sriov related scenarios
       | cr_name       | intel-netdevice          |
       | resource_type | sriovnetworknodepolicies |
     Then the step should succeed
-    And I wait up to 300 seconds for the steps to pass:
+    And I wait up to 500 seconds for the steps to pass:
     """
     When I run the :get admin command with:
       | resource    | sriovnetworknodestates           |
@@ -215,13 +215,13 @@ Feature: Sriov related scenarios
     Given the sriov operator is running well
     Given I switch to the first user
     And I have a project
-    And evaluation of `project.name` is stored in the :usr_project1 clipboard
+    And evaluation of `project.name` is stored in the :usr_project clipboard
     Given I obtain test data file "networking/sriov/sriovnetwork/intelnetdevice.yaml"
     Given I create sriov resource with following:
       | cr_yaml       | intelnetdevice.yaml   |
       | cr_name       | intel-netdevice-rhcos |
       | resource_type | sriovnetwork          |
-      | project       | <%= cb.usr_project1%> |
+      | project       | <%= cb.usr_project%>  |
     Then the step should succeed
 
     And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project %>" project
@@ -242,14 +242,14 @@ Feature: Sriov related scenarios
       | cr_yaml       | intelnetdevice.yaml   |
       | cr_name       | intel-netdevice-rhcos |
       | resource_type | sriovnetwork          |
-      | project       | <%= cb.usr_project1%> |
+      | project       | <%= cb.usr_project%>  |
     Then the step should succeed
 
     And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project %>" project
     When I run the :delete admin command with:
       | object_type       | net-attach-def        |
       | object_name_or_id | intel-netdevice-rhcos |
-      | namespace         | <%= cb.usr_project1%> |
+      | namespace         | <%= cb.usr_project%>  |
     Then the step should succeed
     And I wait up to 30 seconds for the steps to pass:
     """
@@ -401,7 +401,7 @@ Feature: Sriov related scenarios
     When I execute on the pod:
       | bash | -c | cat /sys/class/net/net1/address |
     Then the step should succeed
-    And evaluation of `@result[:response].strip` is stored in the :pod1_net1_mac clipboard
+    And evaluation of `@result[:response].match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)[0]` is stored in the :pod1_net1_mac clipboard
     Given I use the "<%= pod.node_name %>" node
     And I run commands on the host:
       | ip link show ens3f0 |
@@ -533,7 +533,7 @@ Feature: Sriov related scenarios
       | cr_name       | intel-netdevice                 |
       | resource_type | sriovnetworknodepolicies        |
     Then the step should succeed
-    And I wait up to 300 seconds for the steps to pass:
+    And I wait up to 500 seconds for the steps to pass:
     """
     When I run the :get admin command with:
       | resource    | sriovnetworknodestates           |
@@ -729,6 +729,14 @@ Feature: Sriov related scenarios
   @admin
   Scenario: sriov-device-plugin can be scheduled on any node
     Given the sriov operator is running well
+    Given I obtain test data file "networking/sriov/sriovnetworkpolicy/intel-netdevice.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intel-netdevice.yaml     |
+      | cr_name       | intel-netdevice          |
+      | resource_type | sriovnetworknodepolicies |
+    Then the step should succeed
+    And I wait up to 30 seconds for the steps to pass:
+    """
     When I run the :get admin command with:
       | resource  | ds/sriov-device-plugin            |
       | namespace | openshift-sriov-network-operator  |
@@ -736,3 +744,205 @@ Feature: Sriov related scenarios
     Then the step should succeed
     And the output should contain "operator: Exists"
     And the output should not contain "NoSchedule"
+    """
+
+  # @author zzhao@redhat.com
+  # @case_id OCP-36414
+  @destructive
+  @admin  
+  Scenario: pod can be deployed with deployment on non-default project
+    Given the sriov operator is running well
+    Given I obtain test data file "networking/sriov/sriovnetworkpolicy/intel-netdevice.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intel-netdevice.yaml     |
+      | cr_name       | intel-netdevice          |
+      | resource_type | sriovnetworknodepolicies |
+    Then the step should succeed
+    And I wait up to 500 seconds for the steps to pass:
+    """
+    When I run the :get admin command with:
+      | resource    | sriovnetworknodestates           |
+      | namespace   | openshift-sriov-network-operator |
+      | o           | yaml                             |
+    Then the step should succeed
+    And the output should contain: 
+      | intel-netdevice       |
+      | syncStatus: Succeeded |
+      | vfID: 4               |
+    """
+    Given I switch to the first user
+    And I have a project
+    And evaluation of `project.name` is stored in the :usr_project clipboard
+    Given I obtain test data file "networking/sriov/sriovnetwork/intelnetdevice.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intelnetdevice.yaml   |
+      | cr_name       | intel-netdevice-rhcos |
+      | resource_type | sriovnetwork          |
+      | project       | <%= cb.usr_project%>  |
+    Then the step should succeed
+
+    And admin checks that the "intel-netdevice-rhcos" network_attachment_definition exists in the "<%= cb.usr_project%>" project
+    And I use the "<%= cb.usr_project%>" project
+    Given I obtain test data file "networking/sriov/pod/sriov-deployment.yaml"
+    When I run the :create client command with:
+      | f | sriov-deployment.yaml |
+    Then the step should succeed
+    And a pod becomes ready with labels:
+      | app=sriov |
+    When I execute on the pod:
+      | ip | -d | link |
+    Then the output should contain "net1"
+
+  # @author zzhao@redhat.com
+  # @case_id OCP-36459
+  @destructive
+  @admin  
+  Scenario: VF number should be correct when two node have same PF name
+    Given the sriov operator is running well
+    When I run the :label admin command with:
+      | resource | node                                          |
+      | name     | dell-per740-13.rhts.eng.pek2.redhat.com       |
+      | key_val  | sriov=worker13                                |
+      | key_val  | feature.node.kubernetes.io/sriov-capable=true |
+      | overwrite| true                                          |
+    Then the step should succeed
+    Given 2 pods become ready with labels:
+      | app=sriov-network-config-daemon |
+    When I run the :label admin command with:
+      | resource | node                                    |
+      | name     | dell-per740-14.rhts.eng.pek2.redhat.com |
+      | key_val  | sriov=worker14                          |
+      | overwrite| true                                    |
+    Then the step should succeed
+    And I register clean-up steps:
+    """
+    When I run the :label admin command with:
+      | resource | node                                      |
+      | name     | dell-per740-13.rhts.eng.pek2.redhat.com   |
+      | key_val  | sriov-                                    |
+      | key_val  | feature.node.kubernetes.io/sriov-capable- |
+      | overwrite| true                                      |
+    Then the step should succeed
+    Given 2 pods become ready with labels:
+      | app=sriov-network-config-daemon |
+    When I run the :label admin command with:
+      | resource | node                                    |
+      | name     | dell-per740-14.rhts.eng.pek2.redhat.com |
+      | key_val  | sriov-                                  |
+      | overwrite| true                                    |
+    Then the step should succeed
+    """
+    And I wait up to 100 seconds for the steps to pass:
+    """
+    Given I obtain test data file "networking/sriov/sriovnetworkpolicy/bug_1892167/intel_13.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intel_13.yaml              |
+      | cr_name       | intel-netdevice13          |
+      | resource_type | sriovnetworknodepolicies   |
+    Then the step should succeed
+    """
+    Given I obtain test data file "networking/sriov/sriovnetworkpolicy/bug_1892167/intel_14.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intel_14.yaml              |
+      | cr_name       | intel-netdevice14          |
+      | resource_type | sriovnetworknodepolicies   |
+    Then the step should succeed
+    And I wait up to 800 seconds for the steps to pass:
+    """
+    When I run the :get admin command with:
+      | resource    | sriovnetworknodestates           |
+      | namespace   | openshift-sriov-network-operator |
+      | o           | yaml                             |
+    Then the step should succeed
+    And the output should contain: 
+      | intel-netdevice13     |
+      | intel-netdevice14     |
+      | syncStatus: Succeeded |
+    And the output should not contain "syncStatus: InProgress"
+    When I run the :describe admin command with:
+      | resource | node                                    |
+      | name     | dell-per740-13.rhts.eng.pek2.redhat.com |
+    Then the step should succeed
+    And the output should match "openshift.io/intel13:.*2"
+    And the output should not contain "openshift.io/intel14"
+    When I run the :describe admin command with:
+      | resource | node                                    |
+      | name     | dell-per740-14.rhts.eng.pek2.redhat.com |
+    Then the step should succeed
+    And the output should match "openshift.io/intel14:.*3"
+    And the output should not contain "openshift.io/intel13"
+    """
+
+  # @author zzhao@redhat.com
+  # @case_id OCP-37035
+  @destructive
+  @admin  
+  Scenario: i40e sriov virtual functions not created
+    Given the sriov operator is running well
+    Given I obtain test data file "networking/sriov/sriovnetworkpolicy/intel-netdevice.yaml"
+    Given I create sriov resource with following:
+      | cr_yaml       | intel-netdevice.yaml     |
+      | cr_name       | intel-netdevice          |
+      | resource_type | sriovnetworknodepolicies |
+    Then the step should succeed
+    And a pod becomes ready with labels:
+      | app=sriov-device-plugin |
+    And evaluation of `pod.name` is stored in the :pod_dp1 clipboard
+    And evaluation of `pod.node_name` is stored in the :pod_node clipboard
+    And I wait for the resource "pod" named "<%= cb.pod_dp1 %>" to disappear
+    And a pod becomes ready with labels:
+      | app=sriov-device-plugin |
+    And evaluation of `pod.name` is stored in the :pod_dp2 clipboard
+    And I wait up to 100 seconds for the steps to pass:
+    """
+    Given I use the "<%= cb.pod_node %>" node
+    And I run commands on the host:
+      | ip link show ens1f0 |
+    Then the step should succeed
+    And the output should contain:
+      | vf 0 |
+      | vf 1 |
+      | vf 2 |
+      | vf 3 |
+      | vf 4 |
+    """
+    # Delete the policy and recreat it again to make sure the Vf is inited successfully
+    Given I delete the "intel-netdevice" sriov networkpolicy
+    And I wait for the resource "pod" named "<%= cb.pod_dp2 %>" to disappear
+    And I wait up to 500 seconds for the steps to pass:
+    """
+    Given I use the "<%= cb.pod_node %>" node
+    And I run commands on the host:
+      | ip link show ens1f0 |
+    Then the step should succeed
+    And the output should not contain:
+      | vf 0 |
+      | vf 1 |
+      | vf 2 |
+      | vf 3 |
+      | vf 4 |
+    """
+    Given I create sriov resource with following:
+      | cr_yaml       | intel-netdevice.yaml     |
+      | cr_name       | intel-netdevice          |
+      | resource_type | sriovnetworknodepolicies |
+    Then the step should succeed
+    And a pod becomes ready with labels:
+      | app=sriov-device-plugin |
+    And evaluation of `pod.name` is stored in the :pod_dp1 clipboard
+    And I wait for the resource "pod" named "<%= cb.pod_dp1 %>" to disappear
+    And a pod becomes ready with labels:
+      | app=sriov-device-plugin |
+    And I wait up to 100 seconds for the steps to pass:
+    """
+    Given I use the "<%= cb.pod_node %>" node
+    And I run commands on the host:
+      | ip link show ens1f0 |
+    Then the step should succeed
+    And the output should contain:
+      | vf 0 |
+      | vf 1 |
+      | vf 2 |
+      | vf 3 |
+      | vf 4 |
+    """

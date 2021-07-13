@@ -1,15 +1,15 @@
 apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetworkNodePolicy
 metadata:
-  name: mlx277-netdevice-without-mtu
+  name: intel-netdevice13
   namespace: openshift-sriov-network-operator
 spec:
+  deviceType: netdevice
   nicSelector:
-    deviceID: '1015'
     pfNames:
-      - ens2f0
-    vendor: '15b3'
+      - ens1f1
   nodeSelector:
-    feature.node.kubernetes.io/sriov-capable: 'true'
+    sriov: 'worker13'
   numVfs: 2
-  resourceName: mlx277netdevice
+  priority: 99
+  resourceName: intel13

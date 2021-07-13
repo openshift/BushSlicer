@@ -5,7 +5,7 @@ metadata:
   labels:
     name: sriov-specified-cpu
   annotations:
-    k8s.v1.cni.cncf.io/networks: mlx277-netdevice
+    k8s.v1.cni.cncf.io/networks: mlx278-netdevice
 spec:
   containers:
   - name: test-pod

@@ -1,0 +1,15 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: intel-netdevice14
+  namespace: openshift-sriov-network-operator
+spec:
+  deviceType: netdevice
+  nicSelector:
+    pfNames:
+      - ens1f0
+  nodeSelector:
+    sriov: 'worker14'
+  numVfs: 3
+  priority: 99
+  resourceName: intel14
