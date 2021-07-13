@@ -2,20 +2,6 @@
 Feature: Elasticsearch related tests
 
   # @author qitang@redhat.com
-  # @case_id OCP-21487
-  @admin
-  @destructive
-  @commonlogging
-  Scenario: Elasticsearch Prometheus metrics can be accessed.
-    When I perform the HTTP request on the ES pod with labels "es-node-master=true":
-      | relative_url | _prometheus/metrics |
-      | op           | GET                 |
-    Then the step should succeed
-    And the output should contain:
-      | es_cluster_nodes_number          |
-      | es_cluster_shards_active_percent |
-
-  # @author qitang@redhat.com
   # @case_id OCP-22050
   @admin
   @destructive
@@ -39,6 +25,14 @@ Feature: Elasticsearch related tests
       | component=elasticsearch |
     And the expression should be true> pod.volume_claims.first.name.include? "elasticsearch-elasticsearch-cdm" and pod.volume_claims.first.name.include? cb.gen_uuid
     And the expression should be true> persistent_volume_claim(pod.volume_claims.first.name).exists?
+    When I execute on the pod:
+      | ls | /elasticsearch/persistent/elasticsearch/logs |
+    Then the step should succeed
+    And the output should contain:
+      | elasticsearch.log                        |
+      | elasticsearch_deprecation.log            |
+      | elasticsearch_index_indexing_slowlog.log |
+      | elasticsearch_index_search_slowlog.log   |
 
   # @author qitang@redhat.com
   # @case_id OCP-30776

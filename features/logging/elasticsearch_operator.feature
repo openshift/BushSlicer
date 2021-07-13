@@ -10,6 +10,13 @@ Feature: elasticsearch-operator related tests
     Given I wait for the "monitor-elasticsearch-cluster" service_monitor to appear
     And the expression should be true> service_monitor('monitor-elasticsearch-cluster').service_monitor_endpoint_spec(server_name: "elasticsearch-metrics.openshift-logging.svc").port == "elasticsearch"
     And the expression should be true> service_monitor('monitor-elasticsearch-cluster').service_monitor_endpoint_spec(server_name: "elasticsearch-metrics.openshift-logging.svc").path == "/_prometheus/metrics"
+    When I perform the HTTP request on the ES pod with labels "es-node-master=true":
+      | relative_url | _prometheus/metrics |
+      | op           | GET                 |
+    Then the step should succeed
+    And the output should contain:
+      | es_cluster_nodes_number          |
+      | es_cluster_shards_active_percent |
     Given I wait up to 360 seconds for the steps to pass:
     """
     When I perform the GET prometheus rest client with:

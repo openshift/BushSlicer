@@ -106,7 +106,6 @@ Feature: collector related tests
     Examples:
       | index_name  |
       | .operations | # @case_id OCP-25365
-      | infra       | # @case_id OCP-30083
 
   # @author qitang@redhat.com
   # @case_id OCP-18147
@@ -163,22 +162,21 @@ Feature: collector related tests
     Given evaluation of `pod` is stored in the :log_pod clipboard
     Given I switch to cluster admin pseudo user
     Given I use the "openshift-logging" project
-    Given evaluation of `cluster_logging('instance').collection_type` is stored in the :collection_type clipboard
-    Given I wait up to 300 seconds for the steps to pass:
-    """
+    And I wait for the project "<%= cb.proj.name %>" logs to appear in the ES pod
+
     When I perform the HTTP request on the ES pod with labels "es-node-master=true":
       | relative_url | */_search?pretty' -d '{"query": {"match": {"kubernetes.namespace_name": "<%= cb.proj.name %>"}}} |
       | op           | GET                                                                                              |
     Then the step should succeed
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['message'] == "ㄅㄉˇˋㄓˊ˙ㄚㄞㄢㄦㄆ 中国 883.317µs ā á ǎ à ō ó ▅ ▆ ▇ █ 々"
-    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['name'] == cb.collection_type
-    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['inputname'] == (cb.collection_type == "fluentd" ? "fluent-plugin-systemd" : "imfile")
+    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['name'] == "fluentd"
+    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['inputname'] == "fluent-plugin-systemd"
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['ipaddr4'] == cb.log_pod.node_ip
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['docker']['container_id'] == cb.log_pod.container(user: user, name: 'centos-logtest').id
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['kubernetes']['container_name'] == "centos-logtest"
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['kubernetes']['namespace_name'] == cb.proj.name
     And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['kubernetes']['pod_name'] == cb.log_pod.name
-    """
+    And the expression should be true> (@result[:parsed]['hits']['hits'].first['_source']['kubernetes']['flat_labels'] - ["run=centos-logtest", "test=centos-logtest"]).empty?
 
   # @author qitang@redhat.com
   # @case_id OCP-30084
@@ -194,6 +192,15 @@ Feature: collector related tests
     Given I wait for the "infra" index to appear in the ES pod with labels "es-node-master=true"
     Then I get the "infra" logging index information from a pod with labels "es-node-master=true"
     And the expression should be true> cb.index_data['docs.count'] > "0"
+    Given I wait up to 180 seconds for the steps to pass:
+    """
+    When I perform the HTTP request on the ES pod with labels "es-node-master=true":
+      | relative_url | <index_name>*/_search?pretty'  -d '{"query": {"exists": {"field": "systemd"}}} |
+      | op           | GET                                                                            |
+    Then the step should succeed
+    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['name'] == "fluentd"
+    And the expression should be true> @result[:parsed]['hits']['hits'][0]['_source']['pipeline_metadata']['collector']['inputname'] == "fluent-plugin-systemd"
+    """
 
     Given I wait up to 300 seconds for the steps to pass:
     """
