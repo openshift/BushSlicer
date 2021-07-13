@@ -71,6 +71,7 @@ select_machine_type:
             xpath: //span[text()='<machine_type>']
           op: click
 
+
 hover_machine_type:
     element:
         <<: *machine_type_locator
