@@ -517,6 +517,8 @@ module BushSlicer
     # performs an installation task
     def installation_task(task, template:, erb_binding:, template_dir: nil)
       case task[:type]
+      when "template"
+        run_template(task[:path], template_dir, erb_binding)
       when "force_domain"
         self.dns_component = task[:name]
       when "dns_hostnames"
@@ -675,6 +677,7 @@ module BushSlicer
       end
     end
 
+    # This method instruments the overall template installation execution.
     # @param config [String] an YAML file to read variables from
     # @param launched_instances_name_prefix [String]
     def launch_template(config:, launched_instances_name_prefix:)
@@ -711,64 +714,15 @@ module BushSlicer
 
       # this dir can be a URL or a PATH
       config_dir = dirname_path_or_url(file_details[:location])
-      template = ERB.new(
-        readfile(vars[:template], config_dir, details: file_details),
-        nil
-      )
-      template.filename = file_details[:location]
       erb_binding = Common::BaseHelper.binding_from_hash(launcher_binding,
                                                          **vars)
-      template_dir = dirname_path_or_url(file_details[:location])
-
-      # define convenience include methods
-      # defined variables here do not become available in caller template though
-      # see https://stackoverflow.com/questions/53886078
-      erb_binding.local_variable_set :include_erb, lambda { |path, indent=0|
-        t = ERB.new(
-          readfile(path, template_dir), nil, nil, rand_str(10, :ruby_variable)
-        )
-        t.filename = path
-        t.result(erb_binding).gsub(/^/, " "*indent)
-      }
-      erb_binding.local_variable_set :include_ruby, lambda { |path|
-        eval(readfile(path, template_dir), erb_binding, path)&.to_json
-      }
-
-      # finally execute and normalize template
-      template_result = template.result(erb_binding)
-      puts "Loading Template:\n#{template_result}"
-      begin
-        template = YAML.load(template_result)
-      rescue
-        logger.info "Failed to parse YAML of:\n#{template_result}" rescue nil
-        raise
-      end
-      template = normalize_template(template)
-
-      ## implicit launch of hosts
-      implicit_launch_task = { type: "launch_host_groups", list: [] }
-      template[:hosts][:list].each do |host_group|
-        if host_group[:num] && host_group[:num] > 0
-          implicit_launch_task[:list] << {ref: host_group[:ref], num: host_group[:num]}
-        end
-      end
-      unless implicit_launch_task[:list].empty?
-        template[:install_sequence].unshift implicit_launch_task
-      end
-
       ## perform provisioning steps
       org_term = Signal.trap('TERM') { raise "Received SIGTERM during installation." }
       org_int = Signal.trap('INT') { raise "Received SIGINT during installation." }
-      template[:install_sequence].each do |task|
-        installation_task(
-          task,
-          erb_binding: erb_binding,
-          template: template,
-          template_dir: template_dir
-        )
-      end
 
-      ## help users persist home info
+      run_template(vars[:template], config_dir, erb_binding)
+
+      ## help users persist some info
       hosts_spec = hosts.map{ |h|
         "#{h[:flags]}#{h.hostname}:#{h.roles.join(':')}"
       }.join(',')
@@ -808,6 +762,71 @@ module BushSlicer
         rescue => e
           logger.error("could not save vminfo YAML: #{e.inspect}")
         end
+      end
+    end
+
+    # This method only calls a template which might be a nested template
+    def run_template(path, dir, erb_binding)
+      file_detailb = {}
+      template = ERB.new(
+        readfile(path, dir, details: file_details),
+        nil
+      )
+      template.filename = file_details[:location]
+      template_dir = dirname_path_or_url(file_details[:location])
+
+      # define convenience include methods
+      # defined variables here do not become available in caller template though
+      # see https://stackoverflow.com/questions/53886078
+      org_erb_lambda = erb_binding.local_variable_get(:include_erb) rescue nil
+      org_ruby_lambda = erb_binding.local_variable_get(:include_ruby) rescue nil
+      erb_binding.local_variable_set :include_erb, lambda { |path, indent=0|
+        t = ERB.new(
+          readfile(path, template_dir), nil, nil, rand_str(10, :ruby_variable)
+        )
+        t.filename = path
+        t.result(erb_binding).gsub(/^/, " "*indent)
+      }
+      erb_binding.local_variable_set :include_ruby, lambda { |path|
+        eval(readfile(path, template_dir), erb_binding, path)&.to_json
+      }
+
+      # finally execute and normalize template
+      template_result = template.result(erb_binding)
+      puts "Loading Template:\n#{template_result}"
+      begin
+        template = YAML.load(template_result)
+      rescue
+        logger.info "Failed to parse YAML of:\n#{template_result}" rescue nil
+        raise
+      end
+      template = normalize_template(template)
+
+      ## implicit launch of hosts
+      implicit_launch_task = { type: "launch_host_groups", list: [] }
+      template[:hosts][:list].each do |host_group|
+        if host_group[:num] && host_group[:num] > 0
+          implicit_launch_task[:list] << {ref: host_group[:ref], num: host_group[:num]}
+        end
+      end
+      unless implicit_launch_task[:list].empty?
+        template[:install_sequence].unshift implicit_launch_task
+      end
+
+      template[:install_sequence].each do |task|
+        installation_task(
+          task,
+          erb_binding: erb_binding,
+          template: template,
+          template_dir: template_dir
+        )
+      end
+    ensure
+      if org_erb_lambda
+        erb_binding.local_variable_set :include_erb, org_erb_lambda
+      end
+      if org_ruby_lambda
+        erb_binding.local_variable_set :include_ruby, org_ruby_lambda
       end
     end
 
