@@ -79,9 +79,9 @@ Feature: Builds and samples related metrics test
     Then the step should succeed
     Given the "sample-pipeline-1" build was created
     When I run the :start_build client command with:
-      | buildconfig | nodejs-mongodb-example |
+      | buildconfig | nodejs-postgresql-example |
     Then the step should succeed
-    Given the "nodejs-mongodb-example-1" build was created
+    Given the "nodejs-postgresql-example-1" build was created
 
     And I switch to cluster admin pseudo user
     And I use the "openshift-monitoring" project
@@ -119,9 +119,9 @@ Feature: Builds and samples related metrics test
       | exec_command_arg | curl -k -H "Authorization: Bearer <%= cb.sa_token %>" https://prometheus-k8s.openshift-monitoring.svc:9091/api/v1/query?query=openshift_build_created_timestamp_seconds |
     Then the step should succeed
     And the output should contain:
-      | cakephp-mysql-example-1  |
-      | sample-pipeline-1        |
-      | nodejs-mongodb-example-1 |
+      | cakephp-mysql-example-1     |
+      | sample-pipeline-1           |
+      | nodejs-postgresql-example-1 |
     """
     And I wait up to 240 seconds for the steps to pass:
     """
@@ -135,8 +135,8 @@ Feature: Builds and samples related metrics test
       | exec_command_arg | curl -k -H "Authorization: Bearer <%= cb.sa_token %>" https://prometheus-k8s.openshift-monitoring.svc:9091/api/v1/query?query=openshift_build_duration_seconds |
     Then the step should succeed
     And the output should contain:
-      | cakephp-mysql-example-1  |
-      | nodejs-mongodb-example-1 |
+      | cakephp-mysql-example-1     |
+      | nodejs-postgresql-example-1 |
     """
 
   # @author xiuwang@redhat.com
