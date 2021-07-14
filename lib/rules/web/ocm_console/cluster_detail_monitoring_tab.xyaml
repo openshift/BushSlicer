@@ -3,6 +3,38 @@ click_monitoring_tab:
         selector:
             xpath: //button[contains(.,'Monitoring')]
         op: click
+click_settings_tab:
+    element:
+        selector:
+            xpath: //button[contains(.,'Settings')]
+        op: click
+click_overview_tab:
+    element:
+        selector:
+            xpath: //button[contains(.,'Overview')]
+        op: click
+check_user_monitoring_checkbox_disabled:
+    element:
+        selector:
+            xpath: //input[@disabled]
+check_user_monitoring_checkbox_unchecked:
+    element:
+        selector:
+            xpath: //input[@value='false']
+check_user_monitoring_checkbox_checked:
+    element:
+        selector:
+            xpath: //input[@value='true']
+refresh_detail_page_for_settings_tab:
+    element:
+        selector:
+            xpath: //button[@aria-label='Refresh']
+        op: click
+click_save_button_in_settings_tab:
+    element:
+        selector:
+            xpath: //button[text()='Save']
+        op: click
 
 check_installing_cluster_monitoring_tab:
     elements:
